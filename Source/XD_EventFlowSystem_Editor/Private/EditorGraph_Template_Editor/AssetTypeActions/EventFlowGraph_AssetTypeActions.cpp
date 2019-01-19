@@ -29,7 +29,7 @@ FColor FEventFlowGraph_AssetTypeActions::GetTypeColor() const
 
 uint32 FEventFlowGraph_AssetTypeActions::GetCategories()
 {
-	return EAssetTypeCategories::Misc;
+	return EAssetTypeCategories::Blueprint;
 }
 
 bool FEventFlowGraph_AssetTypeActions::HasActions(const TArray<UObject*>& InObjects) const
