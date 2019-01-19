@@ -1,4 +1,4 @@
-// Some copyright should be here...
+﻿// Some copyright should be here...
 
 using UnrealBuildTool;
 
@@ -38,6 +38,17 @@ public class XD_EventFlowSystem_Editor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "EditorStyle",
+                "UnrealEd",
+                "AssetTools",
+                "GraphEditor",
+                "ApplicationCore",
+                "KismetCompiler",
+
+                "Kismet",
+                "BlueprintGraph",
+
+                "XD_EventFlowSystem",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
