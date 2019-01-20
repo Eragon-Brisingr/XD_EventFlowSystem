@@ -45,5 +45,4 @@ protected:
 public:
 	UPROPERTY(Instanced)
 	UEventFlowGraphNodeBase* EventFlowBP_Node = nullptr;
-
 };

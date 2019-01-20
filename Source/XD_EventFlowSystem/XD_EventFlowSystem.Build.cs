@@ -38,6 +38,10 @@ public class XD_EventFlowSystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "UMG",
+
+                "XD_UnrealLibraryEx",
+                "XD_SaveGameSystem",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
