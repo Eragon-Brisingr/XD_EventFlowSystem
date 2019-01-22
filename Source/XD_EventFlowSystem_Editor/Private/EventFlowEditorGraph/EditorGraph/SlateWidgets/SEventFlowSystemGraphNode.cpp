@@ -6,6 +6,9 @@
 #include "SEventFlowSystemGraphPin.h"
 #include "EventFlowSystem_Editor_Log.h"
 #include "SCommentBubble.h"
+#include "NodeFactory.h"
+#include "SGraphNode.h"
+#include "SGraphPanel.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -83,6 +86,10 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 							SAssignNew(ContentWidget, SBox)
 						]
 						+ SVerticalBox::Slot()
+						[
+							SAssignNew(ElementsBox, SVerticalBox)
+						]
+						+ SVerticalBox::Slot()
 						.AutoHeight()
 						[
 							// 错误提示
@@ -130,11 +137,37 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 
 	CreatePinWidgets();
 	CreateContent();
+
+	UEventSequenceEdNode* SequenceEdNode = Cast<UEventSequenceEdNode>(GraphNode);
+	if (SequenceEdNode)
+	{
+		for (int32 i = 0; i < SequenceEdNode->Elements.Num(); i++)
+		{
+			if (SequenceEdNode->Elements[i])
+			{
+				TSharedPtr<SGraphNode> DecoratorWidget = FNodeFactory::CreateNodeWidget(SequenceEdNode->Elements[i]);
+
+				if (OwnerGraphPanelPtr.IsValid())
+				{
+					DecoratorWidget->SetOwner(OwnerGraphPanelPtr.Pin().ToSharedRef());
+				}
+
+				ElementsBox->AddSlot()
+					.AutoHeight()
+					[
+						DecoratorWidget.ToSharedRef()
+					];
+				Elements.Add(DecoratorWidget);
+
+				DecoratorWidget->UpdateGraphNode();
+			}
+		}
+	}
 }
 
 void SEventFlowSystemGraphNode::CreatePinWidgets()
 {
-	UEventFlowSystemEditorNode* EdNode = CastChecked<UEventFlowSystemEditorNode>(GraphNode);
+	UEventFlowSystemEditorNodeBase* EdNode = CastChecked<UEventFlowSystemEditorNodeBase>(GraphNode);
 	for (int32 i = 0; i < EdNode->Pins.Num(); ++i)
 	{
 		UEdGraphPin* Pin = EdNode->Pins[i];
@@ -180,15 +213,28 @@ bool SEventFlowSystemGraphNode::IsNameReadOnly() const
 	return true;
 }
 
+void SEventFlowSystemGraphNode::SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel)
+{
+	SGraphNode::SetOwner(OwnerPanel);
+
+	for (TSharedPtr<SGraphNode>& Element : Elements)
+	{
+		if (Element.IsValid())
+		{
+			Element->SetOwner(OwnerPanel);
+			OwnerPanel->AttachGraphEvents(Element);
+		}
+	}
+}
+
 void SEventFlowSystemGraphNode::OnNameTextCommited(const FText & InText, ETextCommit::Type CommitInfo)
 {
-	UEventFlowSystemEditorNode* UEdNode = CastChecked<UEventFlowSystemEditorNode>(GraphNode);
-
+	UEventFlowSystemEditorNodeBase* UEdNode = CastChecked<UEventFlowSystemEditorNodeBase>(GraphNode);
 }
 
 void SEventFlowSystemGraphNode::CreateContent()
 {
-	UEventFlowSystemEditorNode* Node = Cast<UEventFlowSystemEditorNode>(GraphNode);
+	UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(GraphNode);
 
 	ContentWidget->SetContent(Node->GetContentWidget().ToSharedRef());
 	ContentWidget->SetMinDesiredWidth(200.f);
@@ -196,10 +242,10 @@ void SEventFlowSystemGraphNode::CreateContent()
 
 FText SEventFlowSystemGraphNode::GetBP_NodeName() const
 {
-	UEventFlowSystemEditorNode* Node = Cast<UEventFlowSystemEditorNode>(GraphNode);
-	if (Node->EventFlowBP_Node)
+	UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(GraphNode);
+	if (Node->EventFlowBpNode)
 	{
-		return Node->EventFlowBP_Node->GetNodeTitle();
+		return Node->EventFlowBpNode->GetNodeTitle();
 	}
 	return FText::GetEmpty();
 }

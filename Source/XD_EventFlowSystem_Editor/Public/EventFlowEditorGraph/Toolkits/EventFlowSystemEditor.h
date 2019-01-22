@@ -6,7 +6,7 @@
 #include "NotifyHook.h"
 #include "GraphEditor.h"
 #include "IDetailsView.h"
-#include "EventFlowGraph.h"
+#include "EventFlowGraphBlueprint.h"
 
 class UEventFlowGraphBlueprint;
 class UEventFlowSystemEditorGraph;
@@ -41,9 +41,7 @@ public:
 	void InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* InBP);
 	void BlueprintCompiled(class UBlueprint* Blueprint);
 
-	class UEventFlowGraphBlueprint* GetTemplateBlueprintObj() const;
-
-	UEventFlowGraph* EventFlowGraph;
+	UEventFlowGraphBlueprint* GetEventFlowBlueprint() const;
 
 	UEventFlowSystemEditorGraph* GetEditorGraph() const;
 };

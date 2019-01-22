@@ -8,6 +8,7 @@
 #include "EventFlowGraphBlueprint.generated.h"
 
 class UEventFlowGraphBlueprint;
+class UEventFlowGraphNodeBase;
 
 /**
  * 
@@ -46,9 +47,16 @@ public:
 	UClass* GetBlueprintClass() const override;
 	void GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const override;
 public:
+#if WITH_EDITORONLY_DATA
 	UPROPERTY()
-	class UEventFlowGraph* EventFlowGraph;
+	class UEdGraph* EdGraph;
+
+	UPROPERTY()
+	class UXD_EventFlowSequenceBase* StartSequence;
 
 	UPROPERTY()
 	TArray<FEventFlowDelegateEditorBinding> Bindings;
+
+	TArray<UEventFlowGraphNodeBase*> GetAllNodes() const;
+#endif
 };

@@ -8,18 +8,6 @@
 #include "XD_DebugFunctionLibrary.h"
 #include "XD_EventFlowSystem_Log.h"
 
-FEventFlowElementFinishWarpper::FEventFlowElementFinishWarpper(class UXD_EventFlowElementBase* GameEventElement, const TSoftObjectPtr<class UXD_GameEventGraphNode>& GameEventFinishBranch)
-	: GameEventElement(GameEventElement)
-{
-
-}
-
-FEventFlowElementFinishWarpper::FEventFlowElementFinishWarpper(class UXD_EventFlowElementBase* GameEventElement)
-	: GameEventElement(GameEventElement)
-{
-
-}
-
 UXD_EventFlowBase::UXD_EventFlowBase()
 	:bIsShowGameEvent(true)
 {
@@ -42,7 +30,7 @@ void UXD_EventFlowBase::ReinitGameEvent(class UXD_EventFlowManager* GameEventOwn
 		WorldContext = GameEventOwner->GetWorld()->GetGameInstance()->GetWorldContext();
 		if (GameEventSequence)
 		{
-			GameEventSequence->OwingGameEvent = this;
+			GameEventSequence->OwingEventFlow = this;
 			GameEventSequence->ReinitGameEventSequence();
 		}
 	}
@@ -51,11 +39,6 @@ void UXD_EventFlowBase::ReinitGameEvent(class UXD_EventFlowManager* GameEventOwn
 void UXD_EventFlowBase::ReactiveGameEvent()
 {
 	GetUnderwayGameEventSequence()->ActiveGameEventSequence();
-}
-
-const UEventFlowGraph* UXD_EventFlowBase::GetEventFlowGraphTemplate() const
-{
-	return nullptr;
 }
 
 FText UXD_EventFlowBase::GetGameEventName() const
@@ -110,7 +93,7 @@ void UXD_EventFlowBase::OnRep_CurrentGameEventSequenceList()
 	{
 		if (GameEventSequence)
 		{
-			GameEventSequence->OwingGameEvent = this;
+			GameEventSequence->OwingEventFlow = this;
 		}
 	}
 	if (CurrentGameEventSequenceList.Num() > 1)

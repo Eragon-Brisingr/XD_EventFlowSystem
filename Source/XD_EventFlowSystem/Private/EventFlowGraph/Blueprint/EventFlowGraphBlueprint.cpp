@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventFlowGraphBlueprint.h"
-#include "EventFlowGraph.h"
 #include "EventFlowGraphNodeBase.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "EventFlowGraphBase.h"
@@ -10,7 +9,7 @@
 
 UEventFlowGraphBlueprint::UEventFlowGraphBlueprint()
 {
-	EventFlowGraph = CreateDefaultSubobject<UEventFlowGraph>(GET_MEMBER_NAME_CHECKED(UEventFlowGraphBlueprint, EventFlowGraph));
+	
 }
 
 UClass* UEventFlowGraphBlueprint::GetBlueprintClass() const
@@ -23,9 +22,34 @@ void UEventFlowGraphBlueprint::GetReparentingRules(TSet<const UClass*>& AllowedC
 	AllowedChildrenOfClasses.Add(UEventFlowGraphBase::StaticClass());
 }
 
+#if WITH_EDITOR
+TArray<UEventFlowGraphNodeBase*> UEventFlowGraphBlueprint::GetAllNodes() const
+{
+	if (StartSequence)
+	{
+		struct FNodeCollector
+		{
+			static void Collector(UEventFlowGraphNodeBase* Root, TArray<UEventFlowGraphNodeBase*>& Res)
+			{
+				Res.Add(Root);
+				for (UEventFlowGraphNodeBase* Child : Root->GetChildNodes())
+				{
+					Collector(Child, Res);
+				}
+			}
+		};
+		TArray<UEventFlowGraphNodeBase*> Res;
+		FNodeCollector::Collector((UEventFlowGraphNodeBase*)StartSequence, Res);
+		return Res;
+	}
+	return {};
+}
+#endif // WITH_EDITOR
+
 bool FEventFlowDelegateEditorBinding::DoesBindingTargetExist(UEventFlowGraphBlueprint* Blueprint) const
 {
-	return Blueprint->EventFlowGraph->GetAllNodes().ContainsByPredicate([this](const UEventFlowGraphNodeBase* Node) {return Node && Node == Object.Get(); });
+	//return Blueprint->EventFlowGraph->GetAllNodes().ContainsByPredicate([this](const UEventFlowGraphNodeBase* Node) {return Node && Node == Object.Get(); });
+	return false;
 }
 
 FEventFlowDelegateRuntimeBinding FEventFlowDelegateEditorBinding::ToRuntimeBinding(UEventFlowGraphBlueprint* Blueprint) const

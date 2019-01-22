@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "EventFlowGraphNodeBase.h"
 #include <UserWidget.h>
 #include "XD_EventFlowElementBase.generated.h"
 
@@ -11,7 +11,7 @@
  * 
  */
 UCLASS(Abstract, BlueprintType, Blueprintable, collapseCategories)
-class XD_EVENTFLOWSYSTEM_API UXD_EventFlowElementBase : public UObject
+class XD_EVENTFLOWSYSTEM_API UXD_EventFlowElementBase : public UEventFlowGraphNodeBase
 {
 	GENERATED_BODY()
 
@@ -61,7 +61,7 @@ public:
 
 	/**
 	* 完成该任务序列
-	* @param	NextEdge		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用Index区分
+	* @param	Index		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用Index区分
 	*/
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件", meta = (AdvancedDisplay = "0"))
 	void FinishGameEventElement(int32 Index);
@@ -69,7 +69,6 @@ public:
 	//该游戏元素又未完成了调用这个 e.g.目标数量道具减少
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	void SetReactive();
-
 public:
 	void ActivateGameEventElement();
 	//用于激活该游戏事件元素的检查事件
@@ -94,14 +93,19 @@ public:
 #endif
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "角色|游戏事件")
-	class UXD_EventFlowSequenceBase* OwingGameEventSequence;
+	class UXD_EventFlowSequenceBase* OwingEventFlowSequence;
 
 	UFUNCTION(BlueprintPure, Category = "角色|游戏事件")
-	class AController* GetGameEventOwnerController() const;
+	class AController* GetOwingController() const;
 	UFUNCTION(BlueprintPure, Category = "角色|游戏事件")
-	class APawn* GetGameEventOwnerCharacter() const;
+	class APawn* GetOwningCharacter() const;
 	UFUNCTION(BlueprintPure, Category = "角色|游戏事件")
-	class UXD_EventFlowBase* GetGameEvent() const;
-
+	class UXD_EventFlowBase* GetEventFlow() const;
 };
 
+UCLASS(meta = (DisplayName = "测试"))
+class XD_EVENTFLOWSYSTEM_API UElementTest : public UXD_EventFlowElementBase
+{
+	GENERATED_BODY()
+
+};

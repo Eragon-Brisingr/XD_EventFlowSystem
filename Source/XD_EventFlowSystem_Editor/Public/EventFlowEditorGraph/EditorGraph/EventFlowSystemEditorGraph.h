@@ -10,7 +10,8 @@
 /**
  * 
  */
-class UEventFlowGraph;
+class UEventFlowSystemStartEdNode;
+class UEventFlowGraphBlueprint;
 
 UCLASS()
 class UEventFlowSystemEditorGraph : public UEdGraph
@@ -22,6 +23,8 @@ public:
 	virtual void ClearOldLinks();
 	virtual void LinkAssetNodes();
 	virtual void RefreshNodes();
-	virtual void MapNamedNodes();
-	virtual UEventFlowGraph* GetGraphAsset();
+
+	UEventFlowSystemStartEdNode* StartNode;
+
+	UEventFlowGraphBlueprint* GetBlueprint() const;
 };

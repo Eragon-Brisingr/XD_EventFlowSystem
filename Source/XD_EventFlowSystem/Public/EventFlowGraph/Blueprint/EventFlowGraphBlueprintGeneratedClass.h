@@ -30,7 +30,7 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowGraphBlueprintGeneratedClass : public UBl
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	class UEventFlowGraph* EventFlowGraph;
+	class UXD_EventFlowSequenceBase* StartSequence;
 
 	UPROPERTY()
 	TArray<FEventFlowDelegateRuntimeBinding> Bindings;

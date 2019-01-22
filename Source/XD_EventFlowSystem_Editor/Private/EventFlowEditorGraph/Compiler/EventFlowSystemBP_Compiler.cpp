@@ -4,7 +4,6 @@
 #include "EventFlowGraphBlueprint.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "KismetReinstanceUtilities.h"
-#include "EventFlowGraph.h"
 #include "EventFlowGraphNodeBase.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
@@ -43,7 +42,7 @@ void FEventFlowSystemBP_Compiler::CreateClassVariablesFromBlueprint()
 
 	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetGraphBlueprint();
 
-	for (UEventFlowGraphNodeBase* Node : EditorGraph_Blueprint->EventFlowGraph->GetAllNodes())
+	for (UEventFlowGraphNodeBase* Node : EditorGraph_Blueprint->GetAllNodes())
 	{
 		if (Node->bIsVariable)
 		{
@@ -69,11 +68,18 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 {
 	UEventFlowGraphBlueprintGeneratedClass* BlueprintGeneratedClass = CastChecked<UEventFlowGraphBlueprintGeneratedClass>(Class);
 
-	UEventFlowGraphBlueprint* EventFlowBlueprint = CastChecked<UEventFlowGraphBlueprint>(Class->ClassGeneratedBy);
-	BlueprintGeneratedClass->EventFlowGraph = (UEventFlowGraph*)StaticDuplicateObject(EventFlowBlueprint->EventFlowGraph, BlueprintGeneratedClass, NAME_None, RF_AllFlags & ~RF_DefaultSubObject);
-
 	if (bIsFullCompile)
 	{
+		UEventFlowGraphBlueprint* EventFlowBlueprint = CastChecked<UEventFlowGraphBlueprint>(Class->ClassGeneratedBy);
+		if (EventFlowBlueprint->StartSequence)
+		{
+			BlueprintGeneratedClass->StartSequence = (UXD_EventFlowSequenceBase*)StaticDuplicateObject((UObject*)EventFlowBlueprint->StartSequence, BlueprintGeneratedClass, NAME_None, RF_AllFlags & ~RF_DefaultSubObject);
+		}
+		else
+		{
+			MessageLog.Error(TEXT("起始节点未配置任务序列"));
+		}
+
 		BlueprintGeneratedClass->Bindings.Empty();
 
 		for (int32 Idx = 0; Idx < EventFlowBlueprint->Bindings.Num(); ++Idx)

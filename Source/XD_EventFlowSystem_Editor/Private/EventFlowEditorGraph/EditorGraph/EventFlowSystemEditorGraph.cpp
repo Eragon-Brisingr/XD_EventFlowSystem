@@ -4,22 +4,21 @@
 #include "EventFlowSystemEditorNode.h"
 #include "EventFlowSystem_Editor_Log.h"
 #include "EdGraph/EdGraphPin.h"
-#include "EventFlowGraph.h"
+#include "EventFlowGraphBlueprint.h"
 
 void UEventFlowSystemEditorGraph::BuildGraph()
 {
 	LinkAssetNodes();
-	MapNamedNodes();
 }
 
 void UEventFlowSystemEditorGraph::ClearOldLinks()
 {
 	for (UEdGraphNode* EditorNode : Nodes)
 	{
-		UEventFlowSystemEditorNode* EdNode = Cast<UEventFlowSystemEditorNode>(EditorNode);
-		if (EdNode && EdNode->EventFlowBP_Node)
+		UEventFlowSystemEditorNodeBase* EdNode = Cast<UEventFlowSystemEditorNodeBase>(EditorNode);
+		if (EdNode && EdNode->EventFlowBpNode)
 		{
-			EdNode->EventFlowBP_Node->ClearLinks();
+			EdNode->EventFlowBpNode->ClearLinks();
 		}
 	}
 }
@@ -30,9 +29,9 @@ void UEventFlowSystemEditorGraph::LinkAssetNodes()
 	EventFlowSystem_Log("Starting to link all asset nodes from the editor graph links.");
 	for (UEdGraphNode* EditorNode : Nodes)
 	{
-		if (UEventFlowSystemEditorNode* EdNode = Cast<UEventFlowSystemEditorNode>(EditorNode))
+		if (UEventFlowSystemEditorNodeBase* EdNode = Cast<UEventFlowSystemEditorNodeBase>(EditorNode))
 		{
-			UEventFlowGraphNodeBase* NodeAsset = EdNode->EventFlowBP_Node;
+			UEventFlowGraphNodeBase* NodeAsset = EdNode->EventFlowBpNode;
 			if (NodeAsset != nullptr)
 			{
 
@@ -73,34 +72,14 @@ void UEventFlowSystemEditorGraph::RefreshNodes()
 {
 	for (UEdGraphNode* Node : Nodes)
 	{
-		if (UEventFlowSystemEditorNode* EventFlowEdNode = Cast<UEventFlowSystemEditorNode>(Node))
+		if (UEventFlowSystemEditorNodeBase* EventFlowEdNode = Cast<UEventFlowSystemEditorNodeBase>(Node))
 		{
 			EventFlowEdNode->UpdateVisualNode();
 		}
 	}
 }
 
-void UEventFlowSystemEditorGraph::MapNamedNodes()
+UEventFlowGraphBlueprint* UEventFlowSystemEditorGraph::GetBlueprint() const
 {
-	UEventFlowGraph* Graph = GetGraphAsset();
-	Graph->NamedNodes.Empty();
-    Graph->NodesNames.Empty();
-
-	for (UEdGraphNode* Node : Nodes)
-	{
-		if (UEventFlowSystemEditorNode* EventFlowEdNode = Cast<UEventFlowSystemEditorNode>(Node))
-		{
-			if (EventFlowEdNode->EventFlowBP_Node)
-			{
-				FName Name = EventFlowEdNode->EventFlowBP_Node->GetFName();
-				Graph->NamedNodes.Add(Name.ToString(), EventFlowEdNode->EventFlowBP_Node);
-				Graph->NodesNames.Add(EventFlowEdNode->EventFlowBP_Node, Name.ToString());
-			}
-		}
-	}
-}
-
-UEventFlowGraph * UEventFlowSystemEditorGraph::GetGraphAsset()
-{
-	return Cast<UEventFlowGraph>(GetOuter());
+	return CastChecked<UEventFlowGraphBlueprint>(GetOuter());
 }

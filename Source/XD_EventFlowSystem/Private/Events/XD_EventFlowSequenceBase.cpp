@@ -3,12 +3,13 @@
 #include "XD_EventFlowSequenceBase.h"
 #include "XD_EventFlowBase.h"
 #include "XD_EventFlowSystem_Log.h"
+#include "XD_ObjectFunctionLibrary.h"
 
 #define LOCTEXT_NAMESPACE "游戏事件"
 
 class UWorld* UXD_EventFlowSequenceBase::GetWorld() const
 {
-	return OwingGameEvent ? OwingGameEvent->GetWorld() : nullptr;
+	return OwingEventFlow ? OwingEventFlow->GetWorld() : nullptr;
 }
 
 bool UXD_EventFlowSequenceBase::IsSupportedForNetworking() const
@@ -41,7 +42,7 @@ void UXD_EventFlowSequenceBase::ReplicatedGameEventElement(bool& WroteSomething,
 
 void UXD_EventFlowSequenceBase::ActiveGameEventSequence()
 {
-	EventFlowSystem_Display_LOG("%s激活[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetGameEventOwnerCharacter()), *OwingGameEvent->GetGameEventName().ToString(), *GetDescribe().ToString());
+	EventFlowSystem_Display_LOG("%s激活[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetGameEventOwnerCharacter()), *OwingEventFlow->GetGameEventName().ToString(), *GetDescribe().ToString());
 	for (UXD_EventFlowElementBase* GameEventElement : GameEventElementList)
 	{
 		GameEventElement->ActivateGameEventElement();
@@ -104,7 +105,7 @@ void UXD_EventFlowSequenceBase::ReinitGameEventSequence()
 	{
 		if (GameEventElement)
 		{
-			GameEventElement->OwingGameEventSequence = this;
+			GameEventElement->OwingEventFlowSequence = this;
 		}
 	}
 }
@@ -120,61 +121,61 @@ void UXD_EventFlowSequenceBase::OnRep_GameEventElementList()
 	{
 		if (GameEventElement)
 		{
-			GameEventElement->OwingGameEventSequence = this;
+			GameEventElement->OwingEventFlowSequence = this;
 		}
 	}
 }
 
 class APawn* UXD_EventFlowSequenceBase::GetGameEventOwnerCharacter() const
 {
-	return OwingGameEvent->GetGameEventOwnerCharacter();
+	return OwingEventFlow->GetGameEventOwnerCharacter();
 }
 
-void UGameEventSequence_Branch::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+void UEventFlowSequence_Branch::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UGameEventSequence_Branch, GameEventElementFinishList);
+	DOREPLIFETIME(UEventFlowSequence_Branch, GameEventElementFinishList);
 
 }
 
-void UGameEventSequence_Branch::ReplicatedGameEventElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
+void UEventFlowSequence_Branch::ReplicatedGameEventElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
 {
 	Super::ReplicatedGameEventElement(WroteSomething, Channel, Bunch, RepFlags);
 	for (const FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 	{
-		if (GameEventElementFinishWarpper.GameEventElement)
+		if (GameEventElementFinishWarpper.EventFlowElement)
 		{
-			WroteSomething |= Channel->ReplicateSubobject(GameEventElementFinishWarpper.GameEventElement, *Bunch, *RepFlags);
+			WroteSomething |= Channel->ReplicateSubobject(GameEventElementFinishWarpper.EventFlowElement, *Bunch, *RepFlags);
 		}
 	}
 }
 
-void UGameEventSequence_Branch::ReinitGameEventSequence()
+void UEventFlowSequence_Branch::ReinitGameEventSequence()
 {
 	Super::ReinitGameEventSequence();
 	for (FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 	{
-		if (GameEventElementFinishWarpper.GameEventElement)
+		if (GameEventElementFinishWarpper.EventFlowElement)
 		{
-			GameEventElementFinishWarpper.GameEventElement->OwingGameEventSequence = this;
+			GameEventElementFinishWarpper.EventFlowElement->OwingEventFlowSequence = this;
 		}
 	}
 }
 
-void UGameEventSequence_Branch::ActiveGameEventSequence()
+void UEventFlowSequence_Branch::ActiveGameEventSequence()
 {
 	Super::ActiveGameEventSequence();
 	InvokeActiveFinishList();
 }
 
-void UGameEventSequence_Branch::DeactiveGameEventSequence()
+void UEventFlowSequence_Branch::DeactiveGameEventSequence()
 {
 	Super::DeactiveGameEventSequence();
 	DeactiveFinishBranchs();
 }
 
-void UGameEventSequence_Branch::InvokeFinishGameEventSequence(class UXD_EventFlowElementBase* GameEventElement, int32 Index)
+void UEventFlowSequence_Branch::InvokeFinishGameEventSequence(class UXD_EventFlowElementBase* GameEventElement, int32 Index)
 {
 	//激活结束游戏事件的关键游戏事件
 	if (GameEventElementList.Contains(GameEventElement))
@@ -184,10 +185,10 @@ void UGameEventSequence_Branch::InvokeFinishGameEventSequence(class UXD_EventFlo
 	//结束游戏事件
 	else
 	{
-		UXD_EventFlowSequenceBase* FinishGameEventSequence = OwingGameEvent->GetUnderwayGameEventSequence();
+		UXD_EventFlowSequenceBase* FinishGameEventSequence = OwingEventFlow->GetUnderwayGameEventSequence();
 		for (FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 		{
-			if (GameEventElement == GameEventElementFinishWarpper.GameEventElement)
+			if (GameEventElement == GameEventElementFinishWarpper.EventFlowElement)
 			{
 // 				if (GameEventElementFinishWarpper.GameEventFinishBranch.IsValid())
 // 				{
@@ -206,30 +207,30 @@ void UGameEventSequence_Branch::InvokeFinishGameEventSequence(class UXD_EventFlo
 	}
 }
 
-void UGameEventSequence_Branch::WhenGameEventElementReactive()
+void UEventFlowSequence_Branch::WhenGameEventElementReactive()
 {
 	DeactiveFinishBranchs();
 }
 
-void UGameEventSequence_Branch::DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch)
+void UEventFlowSequence_Branch::DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch)
 {
 	Super::DrawHintInWorld(ARPG_HUD, Index, IsFinishBranch);
 	if (bIsFinishListActive)
 	{
 		for (FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 		{
-			GameEventElementFinishWarpper.GameEventElement->DrawHintInWorld(ARPG_HUD, Index, true);
+			GameEventElementFinishWarpper.EventFlowElement->DrawHintInWorld(ARPG_HUD, Index, true);
 		}
 	}
 }
 
-void UGameEventSequence_Branch::InvokeActiveFinishList()
+void UEventFlowSequence_Branch::InvokeActiveFinishList()
 {
 	if (IsEveryMustGameEventElementFinished())
 	{
 		if (GameEventElementFinishList.Num() == 0)
 		{
-			OwingGameEvent->FinishGameEvent();
+			OwingEventFlow->FinishGameEvent();
 		}
 		else
 		{
@@ -237,7 +238,7 @@ void UGameEventSequence_Branch::InvokeActiveFinishList()
 			{
 				for (FEventFlowElementFinishWarpper& GameEventElementFinish : GameEventElementFinishList)
 				{
-					GameEventElementFinish.GameEventElement->ActivateGameEventElement();
+					GameEventElementFinish.EventFlowElement->ActivateGameEventElement();
 				}
 				bIsFinishListActive = true;
 			}
@@ -245,38 +246,38 @@ void UGameEventSequence_Branch::InvokeActiveFinishList()
 	}
 }
 
-void UGameEventSequence_Branch::DeactiveFinishBranchs()
+void UEventFlowSequence_Branch::DeactiveFinishBranchs()
 {
 	bIsFinishListActive = false;
 	for (FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 	{
-		GameEventElementFinishWarpper.GameEventElement->UnactiveGameEventElement();
+		GameEventElementFinishWarpper.EventFlowElement->UnactiveGameEventElement();
 	}
 }
 
-void UGameEventSequence_Branch::OnRep_GameEventElementFinishList()
+void UEventFlowSequence_Branch::OnRep_GameEventElementFinishList()
 {
 	for (FEventFlowElementFinishWarpper& GameEventElementFinishWarpper : GameEventElementFinishList)
 	{
-		if (GameEventElementFinishWarpper.GameEventElement)
+		if (GameEventElementFinishWarpper.EventFlowElement)
 		{
-			GameEventElementFinishWarpper.GameEventElement->OwingGameEventSequence = this;
+			GameEventElementFinishWarpper.EventFlowElement->OwingEventFlowSequence = this;
 		}
 	}
 }
 
-void UGameEventSequence_List::InvokeFinishGameEventSequence(class UXD_EventFlowElementBase* GameEventElement, int32 Index)
+void UEventFlowSequence_List::InvokeFinishGameEventSequence(class UXD_EventFlowElementBase* GameEventElement, int32 Index)
 {
 	if (IsEveryMustGameEventElementFinished())
 	{
-// 		if (NextGameEvent.IsValid())
-// 		{
-// 			OwingGameEvent->SetAndActiveNextGameEventSequence(NextGameEvent->GetGameEventSequence(OwingGameEvent, NextEdge));
-// 		}
-// 		else
-// 		{
-// 			OwingGameEvent->SetAndActiveNextGameEventSequence(nullptr);
-// 		}
+		if (NextSequence.IsValid())
+		{
+			OwingEventFlow->SetAndActiveNextGameEventSequence(UXD_ObjectFunctionLibrary::DuplicateObject(NextSequence.Get(), OwingEventFlow));
+		}
+		else
+		{
+			OwingEventFlow->SetAndActiveNextGameEventSequence(nullptr);
+		}
 	}
 }
 

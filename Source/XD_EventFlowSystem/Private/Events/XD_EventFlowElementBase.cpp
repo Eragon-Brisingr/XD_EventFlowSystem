@@ -14,7 +14,7 @@ UXD_EventFlowElementBase::UXD_EventFlowElementBase()
 
 class UWorld* UXD_EventFlowElementBase::GetWorld() const
 {
-	return GetGameEvent() ? GetGameEvent()->GetWorld() : nullptr;
+	return GetEventFlow() ? GetEventFlow()->GetWorld() : nullptr;
 }
 
 bool UXD_EventFlowElementBase::IsSupportedForNetworking() const
@@ -52,8 +52,8 @@ void UXD_EventFlowElementBase::FinishGameEventElement(int32 Index)
 	if (bIsFinished == false)
 	{
 		bIsFinished = true;
-		EventFlowSystem_Display_LOG("%s完成[%s]中的游戏事件序列[%s]中的游戏事件元素[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetGameEventOwnerCharacter()), *GetGameEvent()->GetGameEventName().ToString(), *OwingGameEventSequence->GetDescribe().ToString(), *GetName());
-		OwingGameEventSequence->InvokeFinishGameEventSequence(this, Index);
+		EventFlowSystem_Display_LOG("%s完成[%s]中的游戏事件序列[%s]中的游戏事件元素[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetGameEventName().ToString(), *OwingEventFlowSequence->GetDescribe().ToString(), *GetName());
+		OwingEventFlowSequence->InvokeFinishGameEventSequence(this, Index);
 	}
 }
 
@@ -62,40 +62,40 @@ void UXD_EventFlowElementBase::SetReactive()
 	if (bIsFinished == true)
 	{
 		bIsFinished = false;
-		if (bIsMust && OwingGameEventSequence->GameEventElementList.Contains(this))
+		if (bIsMust && OwingEventFlowSequence->GameEventElementList.Contains(this))
 		{
-			OwingGameEventSequence->WhenGameEventElementReactive();
+			OwingEventFlowSequence->WhenGameEventElementReactive();
 		}
 	}
 }
 
 void UXD_EventFlowElementBase::ActivateGameEventElement()
 {
-	WhenActivateGameEventElement(GetGameEventOwnerCharacter(), GetGameEventOwnerController());
+	WhenActivateGameEventElement(GetOwningCharacter(), GetOwingController());
 }
 
 void UXD_EventFlowElementBase::UnactiveGameEventElement()
 {
-	WhenUnactiveGameEventElement(GetGameEventOwnerCharacter(), GetGameEventOwnerController());
+	WhenUnactiveGameEventElement(GetOwningCharacter(), GetOwingController());
 	if (bIsFinished)
 	{
-		WhenFinishGameEventElement(GetGameEventOwnerCharacter(), GetGameEventOwnerController());
+		WhenFinishGameEventElement(GetOwningCharacter(), GetOwingController());
 	}
 }
 
-class AController* UXD_EventFlowElementBase::GetGameEventOwnerController() const
+class AController* UXD_EventFlowElementBase::GetOwingController() const
 {
-	return OwingGameEventSequence->OwingGameEvent->GeGameEventOwnerController();
+	return OwingEventFlowSequence->OwingEventFlow->GeGameEventOwnerController();
 }
 
-class APawn* UXD_EventFlowElementBase::GetGameEventOwnerCharacter() const
+class APawn* UXD_EventFlowElementBase::GetOwningCharacter() const
 {
-	return OwingGameEventSequence->OwingGameEvent->GetGameEventOwnerCharacter();
+	return OwingEventFlowSequence->OwingEventFlow->GetGameEventOwnerCharacter();
 }
 
-class UXD_EventFlowBase* UXD_EventFlowElementBase::GetGameEvent() const
+class UXD_EventFlowBase* UXD_EventFlowElementBase::GetEventFlow() const
 {
-	return OwingGameEventSequence ? OwingGameEventSequence->OwingGameEvent : nullptr;
+	return OwingEventFlowSequence ? OwingEventFlowSequence->OwingEventFlow : nullptr;
 }
 
 #undef LOCTEXT_NAMESPACE

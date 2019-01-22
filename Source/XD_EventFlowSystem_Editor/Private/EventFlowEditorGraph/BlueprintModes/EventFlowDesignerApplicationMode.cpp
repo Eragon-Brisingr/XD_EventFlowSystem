@@ -230,7 +230,7 @@ public:
 						continue;
 					}
 
-					UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+					UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 					for (const FEventFlowDelegateEditorBinding& Binding : Blueprint->Bindings)
 					{
@@ -274,7 +274,7 @@ public:
 						continue;
 					}
 
-					UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+					UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 					for (const FEventFlowDelegateEditorBinding& Binding : Blueprint->Bindings)
 					{
@@ -314,7 +314,7 @@ public:
 						continue;
 					}
 
-					UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+					UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
  					for (const FEventFlowDelegateEditorBinding& Binding : Blueprint->Bindings)
  					{
@@ -348,7 +348,7 @@ public:
 				PropertyHandle->GetOuterObjects(OuterObjects);
 				for (UObject* SelectedObject : OuterObjects)
 				{
-					UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+					UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 					for (const FEventFlowDelegateEditorBinding& Binding : Blueprint->Bindings)
 					{
@@ -364,7 +364,7 @@ public:
 
 			void HandleRemoveBinding(TSharedRef<IPropertyHandle> PropertyHandle)
 			{
-				UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+				UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 				const FScopedTransaction Transaction(LOCTEXT("UnbindDelegate", "Remove Binding"));
 
@@ -382,7 +382,7 @@ public:
 
 			void HandleCreateAndAddBinding(UObject* Object, TSharedRef<IPropertyHandle> PropertyHandle)
 			{
-				UEventFlowGraphBlueprint* Blueprint = Editor->GetTemplateBlueprintObj();
+				UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 				const FScopedTransaction Transaction(LOCTEXT("CreateDelegate", "Create Binding"));
 
@@ -656,7 +656,7 @@ public:
 		};
 
 		FEventFlowSystemEditor* BlueprintEditor = Editor.Pin().Get();
-		PropertyView->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FEventFlowDesignerDelegate::MakeInstance, BlueprintEditor, BlueprintEditor->GetTemplateBlueprintObj()));
+		PropertyView->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FEventFlowDesignerDelegate::MakeInstance, BlueprintEditor, BlueprintEditor->GetEventFlowBlueprint()));
 
 		ChildSlot
 		[
@@ -765,7 +765,7 @@ public:
 
 	void HandleNameTextCommitted(const FText& Text, ETextCommit::Type CommitType)
 	{
-		UEventFlowGraphBlueprint* Blueprint = Editor.Pin()->GetTemplateBlueprintObj();
+		UEventFlowGraphBlueprint* Blueprint = Editor.Pin()->GetEventFlowBlueprint();
 
 		const TArray<TWeakObjectPtr<UObject>>& Selections = PropertyView->GetSelectedObjects();
 		if (Selections.Num() == 1)
@@ -820,7 +820,7 @@ public:
 	{
 		const FScopedTransaction Transaction(LOCTEXT("VariableToggle", "Variable Toggle"));
 
-		UEventFlowGraphBlueprint* Blueprint = Editor.Pin()->GetTemplateBlueprintObj();
+		UEventFlowGraphBlueprint* Blueprint = Editor.Pin()->GetEventFlowBlueprint();
 
 		const TArray<TWeakObjectPtr<UObject>>& Selections = PropertyView->GetSelectedObjects();
 		for (TWeakObjectPtr<UObject> Obj : Selections)
@@ -898,7 +898,7 @@ TSharedRef<SWidget> FEventFlowDesignerGraphSummoner::CreateTabBody(const FWorkfl
 {
 	return SAssignNew(DesignerApplicationMode->DesignerGraphEditor, SGraphEditor)
 		.AdditionalCommands(DesignerApplicationMode->DesignerEditorCommands)
-		.GraphToEdit(InDesignGraphEditor.Pin()->EventFlowGraph->EdGraph)
+		.GraphToEdit(InDesignGraphEditor.Pin()->GetEventFlowBlueprint()->EdGraph)
 		.GraphEvents(DesignerApplicationMode->DesignerGraphEvents);
 }
 
@@ -980,11 +980,11 @@ void FEventFlowDesignerApplicationMode::HandleSelectionChanged(const FGraphPanel
 		TArray<UObject*> ShowObjects;
 		for (UObject* Obj : SelectionSet)
 		{
-			if (UEventFlowSystemEditorNode* EventSystemEdGraphNode = Cast<UEventFlowSystemEditorNode>(Obj))
+			if (UEventFlowSystemEditorNodeBase* EventSystemEdGraphNode = Cast<UEventFlowSystemEditorNodeBase>(Obj))
 			{
-				if (EventSystemEdGraphNode->EventFlowBP_Node)
+				if (EventSystemEdGraphNode->EventFlowBpNode)
 				{
-					ShowObjects.Add(EventSystemEdGraphNode->EventFlowBP_Node);
+					ShowObjects.Add(EventSystemEdGraphNode->EventFlowBpNode);
 				}
 			}
 		}
@@ -1091,6 +1091,14 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandCut()
 
 bool FEventFlowDesignerApplicationMode::CanDesignerCutNodes()
 {
+	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
+	if (SelectedNodes.Num() == 1)
+	{
+		if (UEdGraphNode* Node = Cast<UEdGraphNode>(*FGraphPanelSelectionSet::TConstIterator(SelectedNodes)))
+		{
+			return Node->CanDuplicateNode();
+		}
+	}
 	return true;
 }
 
@@ -1113,7 +1121,7 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandCopy()
 
 	for (FGraphPanelSelectionSet::TIterator it(SelectedNodes); it; ++it)
 	{
-		UEventFlowSystemEditorNode* Node = Cast<UEventFlowSystemEditorNode>(*it);
+		UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(*it);
 		if (Node)
 			Node->PostCopyNode();
 	}
@@ -1121,6 +1129,14 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandCopy()
 
 bool FEventFlowDesignerApplicationMode::CanDesignerCopyNodes()
 {
+	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
+	if (SelectedNodes.Num() == 1)
+	{
+		if (UEdGraphNode* Node = Cast<UEdGraphNode>(*FGraphPanelSelectionSet::TConstIterator(SelectedNodes)))
+		{
+			return Node->CanDuplicateNode();
+		}
+	}
 	return true;
 }
 
@@ -1136,12 +1152,6 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandPaste()
 	FPlatformApplicationMisc::ClipboardPaste(ExportedText);
 	TSet<UEdGraphNode*> ImportedNodes;
 	FEdGraphUtilities::ImportNodesFromText(EdGraph, ExportedText, ImportedNodes);
-
-	for (TSet<UEdGraphNode*>::TIterator It(ImportedNodes); It; ++It)
-	{
-		UEventFlowSystemEditorNode* Node = Cast<UEventFlowSystemEditorNode>(*It);
-		EventFlowEditor.Pin()->EventFlowGraph->AddNode(Node->EventFlowBP_Node);
-	}
 
 	FVector2D AvgNodePosition(0.0f, 0.0f);
 
@@ -1194,6 +1204,14 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandDuplicate()
 
 bool FEventFlowDesignerApplicationMode::CanDesignerDuplicateNodes()
 {
+	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
+	if (SelectedNodes.Num() == 1)
+	{
+		if (UEdGraphNode* Node = Cast<UEdGraphNode>(*FGraphPanelSelectionSet::TConstIterator(SelectedNodes)))
+		{
+			return Node->CanDuplicateNode();
+		}
+	}
 	return true;
 }
 
@@ -1208,14 +1226,25 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandDelete()
 	{
 		if (UEdGraphNode* Node = Cast<UEdGraphNode>(*It))
 		{
-			Node->Modify();
-			Node->DestroyNode();
+			if (Node->CanUserDeleteNode())
+			{
+				Node->Modify();
+				Node->DestroyNode();
+			}
 		}
 	}
 }
 
 bool FEventFlowDesignerApplicationMode::CanDesignerDeleteNodes()
 {
+	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
+	if (SelectedNodes.Num() == 1)
+	{
+		if (UEdGraphNode* Node = Cast<UEdGraphNode>(*FGraphPanelSelectionSet::TConstIterator(SelectedNodes)))
+		{
+			return Node->CanUserDeleteNode();
+		}
+	}
 	return true;
 }
 

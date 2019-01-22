@@ -4,10 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "EventFlowGraph.h"
 #include "XD_EventFlowBase.generated.h"
-
-class UEventFlowGraph;
 
 /**
  * 
@@ -19,27 +16,6 @@ enum class EEventFlowState : uint8
 	Finish_Succeed UMETA(DisplayName = "成功"),
 	Finish_Failed UMETA(DisplayName = "失败")
 };
-
-USTRUCT(BlueprintType)
-struct XD_EVENTFLOWSYSTEM_API FEventFlowElementFinishWarpper
-{
-	GENERATED_USTRUCT_BODY()
-
-public:
-	FEventFlowElementFinishWarpper() = default;
-
-	FEventFlowElementFinishWarpper(class UXD_EventFlowElementBase* GameEventElement);
-
-	FEventFlowElementFinishWarpper(class UXD_EventFlowElementBase* GameEventElement, const TSoftObjectPtr<class UXD_GameEventGraphNode>& GameEventFinishBranch);
-
-public:
-	UPROPERTY(BlueprintReadWrite, Category = "游戏事件", SaveGame)
-	class UXD_EventFlowElementBase* GameEventElement;
-
-// 	UPROPERTY(SaveGame)
-// 	TSoftObjectPtr<class UXD_GameEventGraphNode> GameEventFinishBranch;
-};
-
 
 UCLASS(Blueprintable, BlueprintType, hidedropdown)
 class XD_EVENTFLOWSYSTEM_API UXD_EventFlowBase : public UObject
@@ -82,8 +58,6 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	bool IsFinished() const { return GameEventState != EEventFlowState::Underway; }
-
-	const UEventFlowGraph* GetEventFlowGraphTemplate() const;
 
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	FText GetGameEventName() const;

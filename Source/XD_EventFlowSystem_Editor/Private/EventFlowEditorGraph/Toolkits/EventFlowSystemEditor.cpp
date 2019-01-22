@@ -13,6 +13,7 @@
 #include "Editor.h"
 #include "EventFlowDesignerApplicationMode.h"
 #include "EventFlowSystemApplicationMode.h"
+#include "EventFlowGraphBlueprint.h"
 
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem_Editor"
@@ -24,7 +25,7 @@ FEventFlowSystemEditor::FEventFlowSystemEditor()
 
 FEventFlowSystemEditor::~FEventFlowSystemEditor()
 {
-	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetTemplateBlueprintObj();
+	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetEventFlowBlueprint();
 	if (EditorGraph_Blueprint)
 	{
 		EditorGraph_Blueprint->OnCompiled().RemoveAll(this);
@@ -53,26 +54,22 @@ FString FEventFlowSystemEditor::GetWorldCentricTabPrefix() const
 
 void FEventFlowSystemEditor::InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* InBP)
 {
-	EventFlowGraph = InBP->EventFlowGraph;
-
-	if (EventFlowGraph->EdGraph == nullptr)
+	if (InBP->EdGraph == nullptr)
 	{
 		EventFlowSystem_Log("Creating a new graph.");
-		EventFlowGraph->EdGraph = CastChecked<UEventFlowSystemEditorGraph>(FBlueprintEditorUtils::CreateNewGraph(EventFlowGraph, NAME_None, UEventFlowSystemEditorGraph::StaticClass(), UEventFlowSystemEditorGraphSchema::StaticClass()));
-		EventFlowGraph->EdGraph->bAllowDeletion = false;
+		UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(FBlueprintEditorUtils::CreateNewGraph(InBP, NAME_None, UEventFlowSystemEditorGraph::StaticClass(), UEventFlowSystemEditorGraphSchema::StaticClass()));
+		InBP->EdGraph = EventFlowSystemEditorGraph;
+		InBP->EdGraph->bAllowDeletion = false;
 
 		//Give the schema a chance to fill out any required nodes (like the results node)
-		const UEdGraphSchema* Schema = EventFlowGraph->EdGraph->GetSchema();
-		Schema->CreateDefaultNodesForGraph(*EventFlowGraph->EdGraph);
+		const UEdGraphSchema* Schema = InBP->EdGraph->GetSchema();
+		Schema->CreateDefaultNodesForGraph(*InBP->EdGraph);
 	}
 
-// 	FGenericCommands::Register();
-// 	FGraphEditorCommands::Register();
 	InitBlueprintEditor(InMode, InToolkitHost, { InBP }, true);
-
 	UpdatePreviewActor(GetBlueprintObj(), true);
 
-	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetTemplateBlueprintObj();
+	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetEventFlowBlueprint();
 	if (EditorGraph_Blueprint)
 	{
 		EditorGraph_Blueprint->OnCompiled().AddRaw(this, &FEventFlowSystemEditor::BlueprintCompiled);
@@ -81,9 +78,9 @@ void FEventFlowSystemEditor::InitEventFlowSystemGarphEditor(const EToolkitMode::
 
 void FEventFlowSystemEditor::BlueprintCompiled(class UBlueprint* Blueprint)
 {
-	if (EventFlowGraph)
+	if (GetEventFlowBlueprint())
 	{
-		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(EventFlowGraph->EdGraph))
+		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph))
 		{
 			EdGraph->BuildGraph();
 			EdGraph->RefreshNodes();
@@ -129,21 +126,21 @@ TSubclassOf<UEdGraphSchema> FEventFlowSystemEditor::GetDefaultSchemaClass() cons
 	return UEventFlowSystemEditorGraphSchema::StaticClass();
 }
 
-class UEventFlowGraphBlueprint* FEventFlowSystemEditor::GetTemplateBlueprintObj() const
+class UEventFlowGraphBlueprint* FEventFlowSystemEditor::GetEventFlowBlueprint() const
 {
 	return Cast<UEventFlowGraphBlueprint>(GetBlueprintObj());
 }
 
 UEventFlowSystemEditorGraph* FEventFlowSystemEditor::GetEditorGraph() const
 {
-	return Cast<UEventFlowSystemEditorGraph>(EventFlowGraph->EdGraph);
+	return Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph);
 }
 
 void FEventFlowSystemEditor::SaveAsset_Execute()
 {
-	if (EventFlowGraph)
+	if (GetEventFlowBlueprint())
 	{
-		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(EventFlowGraph->EdGraph))
+		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph))
 		{
 			EdGraph->BuildGraph();
 		}

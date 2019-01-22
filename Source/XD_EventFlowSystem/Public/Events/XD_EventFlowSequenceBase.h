@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include "EventFlowGraphNodeBase.h"
 #include "XD_EventFlowSequenceBase.generated.h"
 
 class UXD_EventFlowElementBase;
@@ -11,8 +11,8 @@ class UXD_EventFlowElementBase;
 /**
  * 
  */
-UCLASS(BlueprintType)
-class XD_EVENTFLOWSYSTEM_API UXD_EventFlowSequenceBase : public UObject
+UCLASS(Abstract, BlueprintType)
+class XD_EVENTFLOWSYSTEM_API UXD_EventFlowSequenceBase : public UEventFlowGraphNodeBase
 {
 	GENERATED_BODY()
 public:
@@ -46,7 +46,7 @@ public:
 	void OnRep_GameEventElementList();
 
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
-	class UXD_EventFlowBase* OwingGameEvent;
+	class UXD_EventFlowBase* OwingEventFlow;
 
 	virtual void ActiveGameEventSequence();
 
@@ -69,9 +69,27 @@ public:
 	 
 };
 
+USTRUCT(BlueprintType)
+struct XD_EVENTFLOWSYSTEM_API FEventFlowElementFinishWarpper
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	FEventFlowElementFinishWarpper(class UXD_EventFlowElementBase* EventFlowElement = nullptr, const TSoftObjectPtr<class UXD_GameEventGraphNode>& GameEventFinishBranch = nullptr)
+		:EventFlowElement(nullptr)
+	{}
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category = "游戏事件", SaveGame)
+	class UXD_EventFlowElementBase* EventFlowElement;
+
+	// 	UPROPERTY(SaveGame)
+	// 	TSoftObjectPtr<class UXD_GameEventGraphNode> GameEventFinishBranch;
+};
+
 //完成必须的游戏事件元素之后出现分支
-UCLASS()
-class XD_EVENTFLOWSYSTEM_API UGameEventSequence_Branch : public UXD_EventFlowSequenceBase
+UCLASS(meta = (DisplayName = "分支型序列"))
+class XD_EVENTFLOWSYSTEM_API UEventFlowSequence_Branch : public UXD_EventFlowSequenceBase
 {
 	GENERATED_BODY()
 public:
@@ -103,13 +121,13 @@ public:
 };
 
 //完成所有必须的游戏事件元素之后即进行下一个序列
-UCLASS()
-class XD_EVENTFLOWSYSTEM_API UGameEventSequence_List : public UXD_EventFlowSequenceBase
+UCLASS(meta = (DisplayName = "顺序型序列"))
+class XD_EVENTFLOWSYSTEM_API UEventFlowSequence_List : public UXD_EventFlowSequenceBase
 {
 	GENERATED_BODY()
 public:
-// 	UPROPERTY(SaveGame)
-// 	TSoftObjectPtr<class UXD_GameEventGraphNode> NextGameEvent;
+ 	UPROPERTY(SaveGame)
+ 	TSoftObjectPtr<class UXD_EventFlowSequenceBase> NextSequence;
 
 	void InvokeFinishGameEventSequence(UXD_EventFlowElementBase* GameEventElement, int32 Index) override;
 };

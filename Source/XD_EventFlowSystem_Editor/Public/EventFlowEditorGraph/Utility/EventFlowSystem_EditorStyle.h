@@ -7,12 +7,16 @@
 /**
  * 
  */
-class XD_EVENTFLOWSYSTEM_EDITOR_API EventFlowSystem_EditorStyle
+namespace EventFlowSystem_EditorStyle
 {
-public:
-	class Pin
+	namespace Pin
 	{
-	public:
-		static const FLinearColor Default;
+		const FLinearColor Default(0.02f, 0.02f, 0.02f);
+	};
+
+	namespace NodeBorder
+	{
+		const FLinearColor Default(0.2f, 0.2f, 0.2f, 0.2f);
+		const FLinearColor Selected(1.00f, 0.08f, 0.08f);
 	};
 };

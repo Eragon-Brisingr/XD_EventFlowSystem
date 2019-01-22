@@ -115,7 +115,7 @@ UEventFlowGraphBlueprint* FEventFlowBlueprintApplicationModeBase::GetBlueprint()
 {
 	if (FEventFlowSystemEditor* Editor = EventFlowEditor.Pin().Get())
 	{
-		return Editor->GetTemplateBlueprintObj();
+		return Editor->GetEventFlowBlueprint();
 	}
 	else
 	{

@@ -6,8 +6,6 @@
 #include "UObject/NoExportTypes.h"
 #include "EventFlowGraphBase.generated.h"
 
-class UEventFlowGraph;
-
 /**
  * 
  */
@@ -16,5 +14,4 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowGraphBase : public UObject
 {
 	GENERATED_BODY()
 public:
-	UEventFlowGraph* GetGraphTemplate() const;
 };
