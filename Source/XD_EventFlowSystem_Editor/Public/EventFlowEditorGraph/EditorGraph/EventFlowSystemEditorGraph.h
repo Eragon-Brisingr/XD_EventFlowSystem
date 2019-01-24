@@ -12,6 +12,9 @@
  */
 class UEventFlowSystemStartEdNode;
 class UEventFlowGraphBlueprint;
+class FCompilerResultsLog;
+class UXD_EventFlowSequenceBase;
+class UEventFlowGraphBlueprintGeneratedClass;
 
 UCLASS()
 class UEventFlowSystemEditorGraph : public UEdGraph
@@ -19,11 +22,11 @@ class UEventFlowSystemEditorGraph : public UEdGraph
 	GENERATED_BODY()
 	
 public:
-	virtual void BuildGraph();
-	virtual void ClearOldLinks();
-	virtual void LinkAssetNodes();
 	virtual void RefreshNodes();
 
+	UXD_EventFlowSequenceBase* BuildSequenceTreeInstance(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
+
+	UPROPERTY()
 	UEventFlowSystemStartEdNode* StartNode;
 
 	UEventFlowGraphBlueprint* GetBlueprint() const;

@@ -3,7 +3,7 @@
 #include "EventFlowGraphBlueprint.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "KismetEditorUtilities.h"
-#include "EventFlowGraphBase.h"
+#include "XD_EventFlowBase.h"
 
 UEventFlowSystemEditorAssetFactory::UEventFlowSystemEditorAssetFactory()
 {
@@ -14,7 +14,7 @@ UEventFlowSystemEditorAssetFactory::UEventFlowSystemEditorAssetFactory()
 
 UObject* UEventFlowSystemEditorAssetFactory::FactoryCreateNew(UClass* Class, UObject* InParent, FName Name, EObjectFlags Flags, UObject* Context, FFeedbackContext* Warn, FName CallingContext)
 {
-	UEventFlowGraphBlueprint* NewBP = CastChecked<UEventFlowGraphBlueprint>(FKismetEditorUtilities::CreateBlueprint(UEventFlowGraphBase::StaticClass(), InParent, Name, EBlueprintType::BPTYPE_Normal, UEventFlowGraphBlueprint::StaticClass(), UEventFlowGraphBlueprintGeneratedClass::StaticClass(), CallingContext));
+	UEventFlowGraphBlueprint* NewBP = CastChecked<UEventFlowGraphBlueprint>(FKismetEditorUtilities::CreateBlueprint(UXD_EventFlowBase::StaticClass(), InParent, Name, EBlueprintType::BPTYPE_Normal, UEventFlowGraphBlueprint::StaticClass(), UEventFlowGraphBlueprintGeneratedClass::StaticClass(), CallingContext));
 	return NewBP;
 }
 

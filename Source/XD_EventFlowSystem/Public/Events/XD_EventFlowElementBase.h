@@ -23,7 +23,6 @@ public:
 	virtual bool IsSupportedForNetworking()const override;
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
-
 private:
 	UPROPERTY(SaveGame, Replicated)
 	uint8 bIsFinished : 1;
@@ -34,7 +33,7 @@ public:
 
 	//为真则显示于玩家面板上
 	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadOnly, Category = "游戏事件", Meta = (DisplayName = "显示于玩家面板", ExposeOnSpawn = true), Replicated)
-	uint8 bIsShowGameEventElement : 1;
+	uint8 bIsShowEventFlowElement : 1;
 
 public:
 	//获取游戏事件元素描述
@@ -64,28 +63,28 @@ public:
 	* @param	Index		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用Index区分
 	*/
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件", meta = (AdvancedDisplay = "0"))
-	void FinishGameEventElement(int32 Index);
+	void FinishEventFlowElement(const FName& NextBranchTag = NAME_None);
 
 	//该游戏元素又未完成了调用这个 e.g.目标数量道具减少
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	void SetReactive();
 public:
-	void ActivateGameEventElement();
+	void ActivateEventFlowElement();
 	//用于激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
-	void WhenActivateGameEventElement(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner);
-	virtual void WhenActivateGameEventElement_Implementation(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner){}
+	void WhenActivateEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
+	virtual void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
-	void UnactiveGameEventElement();
+	void UnactiveEventFlowElement();
 	//用于反激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
-	void WhenUnactiveGameEventElement(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner);
-	virtual void WhenUnactiveGameEventElement_Implementation(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner){}
+	void WhenUnactiveEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
+	virtual void WhenUnactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
 	//游戏事件完成后调用
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
-	void WhenFinishGameEventElement(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner);
-	virtual void WhenFinishGameEventElement_Implementation(class APawn* GameEventOwnerCharacter, class AController* GameEventOwner){}
+	void WhenFinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
+	virtual void WhenFinishEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
 	//假如该游戏事件元素能产生不同分支需重载下面几个函数
 #if WITH_EDITORONLY_DATA
@@ -107,5 +106,6 @@ UCLASS(meta = (DisplayName = "测试"))
 class XD_EVENTFLOWSYSTEM_API UElementTest : public UXD_EventFlowElementBase
 {
 	GENERATED_BODY()
-
+public:
+	virtual void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 };

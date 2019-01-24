@@ -7,41 +7,43 @@
 #include "XD_EventFlowSequenceBase.h"
 #include "XD_DebugFunctionLibrary.h"
 #include "XD_EventFlowSystem_Log.h"
+#include "EventFlowGraphBlueprintGeneratedClass.h"
+#include "XD_ObjectFunctionLibrary.h"
 
 UXD_EventFlowBase::UXD_EventFlowBase()
-	:bIsShowGameEvent(true)
+	:bIsShowEventFlow(true)
 {
 
 }
 
-// UXD_EventFlowBase* UXD_EventFlowBase::NewGameEvent(UObject* WorldContextObject, class UXD_GameEventGraph* GameEventGraph)
+// UXD_EventFlowBase* UXD_EventFlowBase::NewEventFlow(UObject* WorldContextObject, class UXD_EventFlowGraph* EventFlowGraph)
 // {
-// 	UXD_EventFlowBase* GameEvent = NewObject<UXD_EventFlowBase>(WorldContextObject);
-// 	GameEvent->WorldContext = WorldContextObject->GetWorld()->GetGameInstance()->GetWorldContext();
-// 	GameEvent->GameEventTemplate = GameEventGraph;
-// 	return GameEvent;
+// 	UXD_EventFlowBase* EventFlow = NewObject<UXD_EventFlowBase>(WorldContextObject);
+// 	EventFlow->WorldContext = WorldContextObject->GetWorld()->GetGameInstance()->GetWorldContext();
+// 	EventFlow->EventFlowTemplate = EventFlowGraph;
+// 	return EventFlow;
 // }
 
-void UXD_EventFlowBase::ReinitGameEvent(class UXD_EventFlowManager* GameEventOwner)
+void UXD_EventFlowBase::ReinitEventFlow(class UXD_EventFlowManager* EventFlowOwner)
 {
-	for (UXD_EventFlowSequenceBase* GameEventSequence : CurrentGameEventSequenceList)
+	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
 	{
-		this->GameEventOwner = GameEventOwner;
-		WorldContext = GameEventOwner->GetWorld()->GetGameInstance()->GetWorldContext();
-		if (GameEventSequence)
+		this->EventFlowOwner = EventFlowOwner;
+		WorldContext = EventFlowOwner->GetWorld()->GetGameInstance()->GetWorldContext();
+		if (EventFlowSequence)
 		{
-			GameEventSequence->OwingEventFlow = this;
-			GameEventSequence->ReinitGameEventSequence();
+			EventFlowSequence->OwingEventFlow = this;
+			EventFlowSequence->ReinitEventFlowSequence();
 		}
 	}
 }
 
-void UXD_EventFlowBase::ReactiveGameEvent()
+void UXD_EventFlowBase::ReactiveEventFlow()
 {
-	GetUnderwayGameEventSequence()->ActiveGameEventSequence();
+	GetUnderwayEventFlowSequence()->ActiveEventFlowSequence();
 }
 
-FText UXD_EventFlowBase::GetGameEventName() const
+FText UXD_EventFlowBase::GetEventFlowName() const
 {
 	return EventFlowName;
 }
@@ -55,12 +57,12 @@ void UXD_EventFlowBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyCh
 
 class UWorld* UXD_EventFlowBase::GetWorld() const
 {
-	return GameEventOwner ? GameEventOwner->GetWorld() : WorldContext ? WorldContext->World() : nullptr;
+	return EventFlowOwner ? EventFlowOwner->GetWorld() : WorldContext ? WorldContext->World() : nullptr;
 }
 
 bool UXD_EventFlowBase::IsSupportedForNetworking() const
 {
-	return bIsShowGameEvent;
+	return bIsShowEventFlow;
 }
 
 void UXD_EventFlowBase::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -72,101 +74,123 @@ void UXD_EventFlowBase::GetLifetimeReplicatedProps(TArray<class FLifetimePropert
 		BPClass->GetLifetimeBlueprintReplicationList(OutLifetimeProps);
 	}
 
-	DOREPLIFETIME(UXD_EventFlowBase, CurrentGameEventSequenceList);
+	DOREPLIFETIME(UXD_EventFlowBase, CurrentEventFlowSequenceList);
 }
 
-void UXD_EventFlowBase::ReplicatedGameEventSequence(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
+void UXD_EventFlowBase::ReplicatedEventFlowSequence(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
 {
-	for (UXD_EventFlowSequenceBase* GameEventSequence : CurrentGameEventSequenceList)
+	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
 	{
-		if (GameEventSequence)
+		if (EventFlowSequence)
 		{
-			WroteSomething |= Channel->ReplicateSubobject(GameEventSequence, *Bunch, *RepFlags);
-			GameEventSequence->ReplicatedGameEventElement(WroteSomething, Channel, Bunch, RepFlags);
+			WroteSomething |= Channel->ReplicateSubobject(EventFlowSequence, *Bunch, *RepFlags);
+			EventFlowSequence->ReplicatedEventFlowElement(WroteSomething, Channel, Bunch, RepFlags);
 		}
 	}
 }
 
-void UXD_EventFlowBase::OnRep_CurrentGameEventSequenceList()
+void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 {
-	for (UXD_EventFlowSequenceBase* GameEventSequence : CurrentGameEventSequenceList)
+	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
 	{
-		if (GameEventSequence)
+		if (EventFlowSequence)
 		{
-			GameEventSequence->OwingEventFlow = this;
+			EventFlowSequence->OwingEventFlow = this;
 		}
 	}
-	if (CurrentGameEventSequenceList.Num() > 1)
+	if (CurrentEventFlowSequenceList.Num() > 1)
 	{
-		WhenFinishedGameEventSequence(CurrentGameEventSequenceList[CurrentGameEventSequenceList.Num() - 2], GetUnderwayGameEventSequence());
+		WhenFinishedEventFlowSequence(CurrentEventFlowSequenceList[CurrentEventFlowSequenceList.Num() - 2], GetUnderwayEventFlowSequence());
 	}
 }
 
-void UXD_EventFlowBase::SetAndActiveNextGameEventSequence(class UXD_EventFlowSequenceBase* NextGameEventSequence)
+void UXD_EventFlowBase::SetAndActiveNextEventFlowSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence)
 {
-	UXD_EventFlowSequenceBase* FinishGameEventSequence = GetUnderwayGameEventSequence();
-	EventFlowSystem_Display_LOG("%s完成[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetGameEventOwnerCharacter()), *GetGameEventName().ToString(), *FinishGameEventSequence->GetDescribe().ToString());
-	if (NextGameEventSequence)
+	UXD_EventFlowSequenceBase* FinishEventFlowSequence = GetUnderwayEventFlowSequence();
+	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetEventFlowName().ToString(), *FinishEventFlowSequence->GetDescribe().ToString());
+	if (NextEventFlowSequence)
 	{
-		FinishGameEventSequence->DeactiveGameEventSequence();
-		CurrentGameEventSequenceList.Add(NextGameEventSequence);
-		NextGameEventSequence->ActiveGameEventSequence();
-		WhenFinishedGameEventSequence(FinishGameEventSequence, NextGameEventSequence);
+		FinishEventFlowSequence->DeactiveEventFlowSequence();
+		CurrentEventFlowSequenceList.Add(NextEventFlowSequence);
+		OnRep_CurrentEventFlowSequenceList();
+		NextEventFlowSequence->ActiveEventFlowSequence();
+		WhenFinishedEventFlowSequence(FinishEventFlowSequence, NextEventFlowSequence);
 	}
 	else
 	{
-		WhenFinishedGameEventSequence(FinishGameEventSequence, nullptr);
-		FinishGameEvent();
+		WhenFinishedEventFlowSequence(FinishEventFlowSequence, nullptr);
+		FinishEventFlowSucceed();
 	}
 }
 
-class APawn* UXD_EventFlowBase::GetGameEventOwnerCharacter() const
+class APawn* UXD_EventFlowBase::GetEventFlowOwnerCharacter() const
 {
-	return GeGameEventOwnerController()->GetPawn();
+	return GetEventFlowOwnerController()->GetPawn();
 }
 
-class AController* UXD_EventFlowBase::GeGameEventOwnerController() const
+class AController* UXD_EventFlowBase::GetEventFlowOwnerController() const
 {
-	if (AController* Controller = Cast<AController>(GameEventOwner->GetOwner()))
+	if (AController* Controller = Cast<AController>(EventFlowOwner->GetOwner()))
 	{
 		return Controller;
 	}
-	else if (APawn* Pawn = Cast<APawn>(GameEventOwner->GetOwner()))
+	else if (APawn* Pawn = Cast<APawn>(EventFlowOwner->GetOwner()))
 	{
 		return Pawn->GetController();
 	}
 	return nullptr;
 }
 
-void UXD_EventFlowBase::ActiveGameEvent(class UXD_EventFlowManager* GameEventExecuter)
+void UXD_EventFlowBase::ActiveEventFlow(class UXD_EventFlowManager* EventFlowExecuter)
 {
-	GameEventOwner = GameEventExecuter;
-	GameEventState = EEventFlowState::Underway;
+	if (UEventFlowGraphBlueprintGeneratedClass* GeneratedClass = Cast<UEventFlowGraphBlueprintGeneratedClass>(GetClass()))
+	{
+		if (GeneratedClass->StartSequence)
+		{
+			EventFlowOwner = EventFlowExecuter;
+			EventFlowState = EEventFlowState::Underway;
 
-	//CurrentGameEventSequenceList.Add(GameEventTemplate->FirstGameEventGraphNode->GetGameEventSequence(this, nullptr));
-
-	CurrentGameEventSequenceList[0]->ActiveGameEventSequence();
+			CurrentEventFlowSequenceList.Add((UXD_EventFlowSequenceBase*)GeneratedClass->StartSequence->GetDuplicatedNode(this));
+			OnRep_CurrentEventFlowSequenceList();
+			GetUnderwayEventFlowSequence()->ActiveEventFlowSequence();
+		}
+		else
+		{
+			EventFlowSystem_Error_Log("类[%s]中不存在任务序列", *GetClass()->GetName());
+		}
+	}
+	else
+	{
+		EventFlowSystem_Error_Log("类[%s]的类型不为UEventFlowGraphBlueprintGeneratedClass", *GetClass()->GetName());
+	}
 }
 
-void UXD_EventFlowBase::FinishGameEvent()
+void FinishEventFlowImpl(UXD_EventFlowBase* EventFlow, UXD_EventFlowManager* EventFlowOwner)
 {
-	GetUnderwayGameEventSequence()->DeactiveGameEventSequence();
-	GameEventState = EEventFlowState::Finish_Succeed;
-	GameEventOwner->UnderwayGameEventList.Remove(this);
-	GameEventOwner->FinishGameEventList.Add(this);
-	GameEventOwner->OnRep_UnderwayGameEventList();
-	GameEventOwner->OnRep_FinishGameEventList();
-
-	EventFlowSystem_Display_LOG("%s完成游戏事件[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetGameEventOwnerCharacter()), *GetName());
+	EventFlow->GetUnderwayEventFlowSequence()->DeactiveEventFlowSequence();
+	EventFlowOwner->UnderwayEventFlowList.Remove(EventFlow);
+	EventFlowOwner->FinishEventFlowList.Add(EventFlow);
+	EventFlowOwner->OnRep_UnderwayEventFlowList();
+	EventFlowOwner->OnRep_FinishEventFlowList();
 }
 
-void UXD_EventFlowBase::WhenFinishedGameEventSequence_Implementation(class UXD_EventFlowSequenceBase* FinishedGameEventSequence, class UXD_EventFlowSequenceBase* UnderwayGameEventSequences)
+void UXD_EventFlowBase::FinishEventFlowSucceed()
 {
-	GameEventOwner->OnFinishedGameEventSequence.Broadcast(this, FinishedGameEventSequence, UnderwayGameEventSequences);
+	FinishEventFlowImpl(this, EventFlowOwner);
+
+	EventFlowState = EEventFlowState::Finish_Succeed;
+	EventFlowSystem_Display_Log("%s游戏事件[%s]成功完成", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetName());
 }
 
-void UXD_EventFlowBase::ForceFinishGameEvent(EEventFlowState State)
+void UXD_EventFlowBase::FinishEventFlowFailed()
 {
-	FinishGameEvent();
-	GameEventState = State;
+	FinishEventFlowImpl(this, EventFlowOwner);
+
+	EventFlowState = EEventFlowState::Finish_Succeed;
+	EventFlowSystem_Display_Log("%s游戏事件[%s]失败", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetName());
+}
+
+void UXD_EventFlowBase::WhenFinishedEventFlowSequence_Implementation(class UXD_EventFlowSequenceBase* FinishedEventFlowSequence, class UXD_EventFlowSequenceBase* UnderwayEventFlowSequences)
+{
+	EventFlowOwner->OnFinishedEventFlowSequence.Broadcast(this, FinishedEventFlowSequence, UnderwayEventFlowSequences);
 }

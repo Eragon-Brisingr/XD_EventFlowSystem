@@ -7,6 +7,8 @@
 #include "XD_SaveGameInterface.h"
 #include "XD_EventFlowManager.generated.h"
 
+class UXD_EventFlowBase;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class XD_EVENTFLOWSYSTEM_API UXD_EventFlowManager : public UActorComponent, public IXD_SaveGameInterface
 {
@@ -30,53 +32,53 @@ public:
 
 	virtual void WhenPostLoad_Implementation() override;
 private:
-	void ReplicatedGameEventList(const TArray<UXD_EventFlowBase*>& GameEventList, bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags);
+	void ReplicatedEventFlowList(const TArray<UXD_EventFlowBase*>& EventFlowList, bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags);
 	//游戏事件
 public:
 	UPROPERTY()
-	TArray<class UXD_EventFlowBase*> PreUnderwayGameEventList;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "游戏事件", ReplicatedUsing = OnRep_UnderwayGameEventList, SaveGame)
-	TArray<class UXD_EventFlowBase*> UnderwayGameEventList;
+	TArray<class UXD_EventFlowBase*> PreUnderwayEventFlowList;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "游戏事件", ReplicatedUsing = OnRep_UnderwayEventFlowList, SaveGame)
+	TArray<class UXD_EventFlowBase*> UnderwayEventFlowList;
 	UFUNCTION()
-	void OnRep_UnderwayGameEventList();
+	void OnRep_UnderwayEventFlowList();
 
 	UPROPERTY()
-	TArray<class UXD_EventFlowBase*> PreFinishGameEventList;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "游戏事件", ReplicatedUsing = OnRep_FinishGameEventList, SaveGame)
-	TArray<class UXD_EventFlowBase*> FinishGameEventList;
+	TArray<class UXD_EventFlowBase*> PreFinishEventFlowList;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "游戏事件", ReplicatedUsing = OnRep_FinishEventFlowList, SaveGame)
+	TArray<class UXD_EventFlowBase*> FinishEventFlowList;
 	UFUNCTION()
-	void OnRep_FinishGameEventList();
+	void OnRep_FinishEventFlowList();
 
-// 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件", BlueprintAuthorityOnly)
-// 	void ApplyGameEvent(class UXD_GameEventGraph* GameEventGraph);
-// 
-// 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
-// 	bool IsGameEventExistInUnderwayList(class UXD_GameEventGraph* GameEvent);
-// 
-// 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
-// 	bool IsGameEventExistInFinishList(class UXD_GameEventGraph* GameEvent);
-// 
-// 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
-// 	bool IsGameEventExist(class UXD_GameEventGraph* GameEvent);
+	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件", BlueprintAuthorityOnly)
+	void ActiveEventFlow(TSubclassOf<UXD_EventFlowBase> EventFlowGraph);
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAcceptGameEvent, class UXD_EventFlowBase*, GameEvent);
+	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
+	bool IsEventFlowExistInUnderwayList(TSubclassOf<UXD_EventFlowBase> EventFlowGraph);
+
+	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
+	bool IsEventFlowExistInFinishList(TSubclassOf<UXD_EventFlowBase> EventFlowGraph);
+
+	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
+	bool IsEventFlowExist(TSubclassOf<UXD_EventFlowBase> EventFlowGraph);
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAcceptEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnAcceptGameEvent OnAcceptGameEvent;
+	FOnAcceptEventFlow OnAcceptEventFlow;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveUnderwayGameEvent, class UXD_EventFlowBase*, GameEvent);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveUnderwayEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnRemoveUnderwayGameEvent OnRemoveUnderwayGameEvent;
+	FOnRemoveUnderwayEventFlow OnRemoveUnderwayEventFlow;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFinishGameEvent, class UXD_EventFlowBase*, GameEvent);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFinishEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnFinishGameEvent OnFinishGameEvent;
+	FOnFinishEventFlow OnFinishEventFlow;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveFinishGameEvent, class UXD_EventFlowBase*, GameEvent);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveFinishEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnRemoveFinishGameEvent OnRemoveFinishGameEvent;
+	FOnRemoveFinishEventFlow OnRemoveFinishEventFlow;
 	
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnFinishedGameEventSequence, class UXD_EventFlowBase*, GameEvent, class UXD_EventFlowSequenceBase*, FinishedGameEventSequence, class UXD_EventFlowSequenceBase*, UnderwayGameEventSequences);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnFinishedEventFlowSequence, class UXD_EventFlowBase*, EventFlow, class UXD_EventFlowSequenceBase*, FinishedEventFlowSequence, class UXD_EventFlowSequenceBase*, UnderwayEventFlowSequences);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnFinishedGameEventSequence OnFinishedGameEventSequence;
+	FOnFinishedEventFlowSequence OnFinishedEventFlowSequence;
 
 };

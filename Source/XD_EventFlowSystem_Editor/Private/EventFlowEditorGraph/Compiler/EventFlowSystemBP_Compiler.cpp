@@ -5,6 +5,8 @@
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "KismetReinstanceUtilities.h"
 #include "EventFlowGraphNodeBase.h"
+#include "EventFlowSystemEditorGraph.h"
+#include "EventFlowSystemEditorNode.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
@@ -71,14 +73,16 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 	if (bIsFullCompile)
 	{
 		UEventFlowGraphBlueprint* EventFlowBlueprint = CastChecked<UEventFlowGraphBlueprint>(Class->ClassGeneratedBy);
-		if (EventFlowBlueprint->StartSequence)
+		if (UEventFlowSystemEditorGraph* DesignerGraph = Cast<UEventFlowSystemEditorGraph>(EventFlowBlueprint->EdGraph))
 		{
-			BlueprintGeneratedClass->StartSequence = (UXD_EventFlowSequenceBase*)StaticDuplicateObject((UObject*)EventFlowBlueprint->StartSequence, BlueprintGeneratedClass, NAME_None, RF_AllFlags & ~RF_DefaultSubObject);
+			BlueprintGeneratedClass->StartSequence = DesignerGraph->BuildSequenceTreeInstance(BlueprintGeneratedClass, MessageLog);
+			EventFlowBlueprint->StartSequence = BlueprintGeneratedClass->StartSequence;
+			if (BlueprintGeneratedClass->StartSequence == nullptr)
+			{
+				MessageLog.Error(TEXT("起始节点未配置任务序列"));
+			}
 		}
-		else
-		{
-			MessageLog.Error(TEXT("起始节点未配置任务序列"));
-		}
+
 
 		BlueprintGeneratedClass->Bindings.Empty();
 

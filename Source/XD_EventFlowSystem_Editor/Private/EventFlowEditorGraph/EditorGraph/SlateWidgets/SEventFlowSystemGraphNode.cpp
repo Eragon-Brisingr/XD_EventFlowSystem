@@ -9,6 +9,7 @@
 #include "NodeFactory.h"
 #include "SGraphNode.h"
 #include "SGraphPanel.h"
+#include "EventFlowSystem_EditorStyle.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -40,7 +41,8 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 			SNew(SBorder)
 			.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
 			.Padding(FMargin(1.f, 5.0f))
-			.BorderBackgroundColor(FLinearColor(0.1f, 0.1f, 0.1f))
+			.BorderBackgroundColor(this, &SEventFlowSystemGraphNode::GetBorderBackgroundColor)
+			.OnMouseButtonDown(this, &SEventFlowSystemGraphNode::OnMouseDown)
 			[
 				SNew(SHorizontalBox)
 				+ SHorizontalBox::Slot()
@@ -141,11 +143,11 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 	UEventSequenceEdNode* SequenceEdNode = Cast<UEventSequenceEdNode>(GraphNode);
 	if (SequenceEdNode)
 	{
-		for (int32 i = 0; i < SequenceEdNode->Elements.Num(); i++)
+		for (int32 i = 0; i < SequenceEdNode->EventElements.Num(); i++)
 		{
-			if (SequenceEdNode->Elements[i])
+			if (SequenceEdNode->EventElements[i])
 			{
-				TSharedPtr<SGraphNode> DecoratorWidget = FNodeFactory::CreateNodeWidget(SequenceEdNode->Elements[i]);
+				TSharedPtr<SGraphNode> DecoratorWidget = FNodeFactory::CreateNodeWidget(SequenceEdNode->EventElements[i]);
 
 				if (OwnerGraphPanelPtr.IsValid())
 				{
@@ -230,6 +232,28 @@ void SEventFlowSystemGraphNode::SetOwner(const TSharedRef<SGraphPanel>& OwnerPan
 void SEventFlowSystemGraphNode::OnNameTextCommited(const FText & InText, ETextCommit::Type CommitInfo)
 {
 	UEventFlowSystemEditorNodeBase* UEdNode = CastChecked<UEventFlowSystemEditorNodeBase>(GraphNode);
+}
+
+FSlateColor SEventFlowSystemGraphNode::GetBorderBackgroundColor() const
+{
+	if (UEventElementEdNode* EventElementEdNode = Cast<UEventElementEdNode>(GraphNode))
+	{
+		return GetOwnerPanel()->SelectionManager.SelectedNodes.Contains(GraphNode) ? EventFlowSystem_EditorStyle::NodeBorder::Selected : EventFlowSystem_EditorStyle::NodeBorder::Default;
+	}
+	else
+	{
+		return EventFlowSystem_EditorStyle::NodeBorder::Default;
+	}
+}
+
+FReply SEventFlowSystemGraphNode::OnMouseDown(const FGeometry& SenderGeometry, const FPointerEvent& MouseEvent)
+{
+	if (UEventElementEdNode* EventElementEdNode = Cast<UEventElementEdNode>(GraphNode))
+	{
+		GetOwnerPanel()->SelectionManager.ClickedOnNode(GraphNode, MouseEvent);
+		return FReply::Handled();
+	}
+	return FReply::Unhandled();
 }
 
 void SEventFlowSystemGraphNode::CreateContent()

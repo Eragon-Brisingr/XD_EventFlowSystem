@@ -3,7 +3,7 @@
 #include "EventFlowGraphBlueprint.h"
 #include "EventFlowGraphNodeBase.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
-#include "EventFlowGraphBase.h"
+#include "XD_EventFlowBase.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
@@ -19,7 +19,7 @@ UClass* UEventFlowGraphBlueprint::GetBlueprintClass() const
 
 void UEventFlowGraphBlueprint::GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const
 {
-	AllowedChildrenOfClasses.Add(UEventFlowGraphBase::StaticClass());
+	AllowedChildrenOfClasses.Add(UXD_EventFlowBase::StaticClass());
 }
 
 #if WITH_EDITOR

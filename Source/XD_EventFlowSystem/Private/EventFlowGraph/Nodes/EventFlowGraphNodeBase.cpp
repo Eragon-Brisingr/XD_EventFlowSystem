@@ -1,5 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "EventFlowGraphNodeBase.h"
+#include "XD_ObjectFunctionLibrary.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -17,5 +18,9 @@ FText UEventFlowGraphNodeBase::GetNodeTitle_Implementation()
 #endif
 }
 
+UEventFlowGraphNodeBase* UEventFlowGraphNodeBase::GetDuplicatedNode(UObject* Outer) const
+{
+	return UXD_ObjectFunctionLibrary::DuplicateObject(this, Outer, GetFName());
+}
 
 #undef LOCTEXT_NAMESPACE

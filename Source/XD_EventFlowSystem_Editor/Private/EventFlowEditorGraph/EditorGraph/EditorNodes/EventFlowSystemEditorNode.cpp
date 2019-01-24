@@ -14,6 +14,8 @@
 #include "EventFlowSystem_Editor_ClassHelper.h"
 #include "XD_EventFlowElementBase.h"
 #include "SGraphEditorActionMenuBase.h"
+#include "CompilerResultsLog.h"
+#include "EventFlowGraphBlueprintGeneratedClass.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -59,18 +61,6 @@ FPinConnectionResponse UEventFlowSystemEditorNodeBase::CanLinkedTo(const UEventF
 bool UEventFlowSystemEditorNodeBase::GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const
 {
 	return false;
-}
-
-void UEventFlowSystemEditorNodeBase::SaveNodesAsChildren(TArray<UEdGraphNode*>& Children)
-{
-    for (UEdGraphNode* Child : Children)
-    {
-        UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(Child);
-		if (Node)
-		{
-			EventFlowBpNode->LinkArgumentNodeAsChild(Node->EventFlowBpNode);
-		}
-    }
 }
 
 bool UEventFlowSystemEditorNodeBase::HasOutputPins()
@@ -190,6 +180,9 @@ UEdGraphNode* FNewElement_SchemaAction::PerformAction(class UEdGraph* ParentGrap
 	{
 		UEventElementEdNode* NewElementEdNode = NewObject<UEventElementEdNode>(ParentGraph, NAME_None, RF_Transactional);
 		NewElementEdNode->EventFlowBpNode = NewObject<UXD_EventFlowElementBase>(SequenceNode, NewElementClass, NAME_None, RF_Transactional);
+		NewElementEdNode->CreateNewGuid();
+		NewElementEdNode->PostPlacedNewNode();
+		NewElementEdNode->AllocateDefaultPins();
 		SequenceNode->AddElement(NewElementEdNode);
 	}
 	return nullptr;
@@ -203,7 +196,7 @@ UEdGraphNode* FNewBranch_SchemaAction::PerformAction(class UEdGraph* ParentGraph
 
 	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
 
-	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(EventFlowSystemEditorGraph->GetBlueprint(), NewElementClass, NAME_None, RF_Transactional);
+	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(SequenceEdNode, NewElementClass, NAME_None, RF_Transactional);
 	FGraphNodeCreator<UEventSequenceBranchEdNode> Creator(*ParentGraph);
 	UEventSequenceBranchEdNode* EditorNode = Creator.CreateNode(bSelectNewNode);
 	EditorNode->EventFlowBpNode = AssetNode;
@@ -281,7 +274,11 @@ FPinConnectionResponse UEventSequenceEdNode::CanLinkedTo(const UEventFlowSystemE
 		}
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("只能和结束分支节点相连"));
 	}
-	return Super::CanLinkedTo(AnotherNode);
+	else if (const UEventSequenceEdNode* BranchNode = Cast<const UEventSequenceEdNode>(AnotherNode))
+	{
+		return Super::CanLinkedTo(AnotherNode);
+	}
+	return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("无法连接"));
 }
 
 void UEventElementEdNode::DestroyNode()
@@ -314,7 +311,7 @@ bool UEventSequenceEdNode::GetNodeLinkableContextActions(FGraphContextMenuBuilde
 				Arguments.Add(TEXT("NodeName"), ClassData.GetClass()->GetDisplayNameText());
 				TSharedPtr<FNewBranch_SchemaAction> NewNodeAction;
 
-				NewNodeAction = MakeShareable(new FNewBranch_SchemaAction(ClassData.GetCategory(), FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, ClassData.GetClass()));
+				NewNodeAction = MakeShareable(new FNewBranch_SchemaAction(ClassData.GetCategory(), FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, const_cast<UEventSequenceEdNode*>(this), ClassData.GetClass()));
 
 				BaseBuilder.AddAction(NewNodeAction);
 			}
@@ -331,27 +328,81 @@ void UEventSequenceEdNode::AddElement(UEventElementEdNode* Element)
 	GetGraph()->Modify();
 	Modify();
 
+	Element->ParentNode = this;
 	Element->SetFlags(RF_Transactional);
 
-	Element->CreateNewGuid();
-	Element->PostPlacedNewNode();
-	Element->AllocateDefaultPins();
 	Element->AutowireNewNode(nullptr);
 
 	Element->NodePosX = 0;
 	Element->NodePosY = 0;
 
-	Elements.Add(Element);
+	EventElements.Add(Element);
 
 	GetGraph()->NotifyGraphChanged();
 }
 
 void UEventSequenceEdNode::RemoveElement(UEventElementEdNode* Element)
 {
-	Elements.RemoveSingle(Element);
+	EventElements.RemoveSingle(Element);
 	Modify();
 
 	GetGraph()->NotifyGraphChanged();
+}
+
+UXD_EventFlowSequenceBase* UEventSequenceEdNode::BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog)
+{
+	if (EventFlowBpNode)
+	{
+		UXD_EventFlowSequenceBase** P_Sequence = Outer->SequenceList.FindByPredicate([&](UXD_EventFlowSequenceBase* E) {return E->GetName() == EventFlowBpNode->GetName(); });
+		UXD_EventFlowSequenceBase* Sequence = P_Sequence ? *P_Sequence : nullptr;
+		if (Sequence == nullptr)
+		{
+			Sequence = DuplicatedBpNode<UXD_EventFlowSequenceBase>(Outer);
+			Outer->SequenceList.Add(Sequence);
+			for (UEventElementEdNode* ElementEdNode : EventElements)
+			{
+				if (ElementEdNode->EventFlowBpNode)
+				{
+					Sequence->EventFlowElementList.Add(ElementEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence));
+				}
+				else
+				{
+					MessageLog.Error(TEXT("@@ 中任务元素 @@ 丢失"), this, ElementEdNode);
+				}
+			}
+			if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Sequence))
+			{
+				for (UEdGraphPin* Pin : Pins)
+				{
+					for (UEventSequenceEdNode* NextSequenceEdNode : GetChildNodes<UEventSequenceEdNode>())
+					{
+						List->NextSequenceTemplate = NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog);
+						break;
+					}
+				}
+			}
+			else if (UEventFlowSequence_Branch* Branch = Cast<UEventFlowSequence_Branch>(Sequence))
+			{
+				for (UEventSequenceBranchEdNode* BranchEdNode : GetChildNodes<UEventSequenceBranchEdNode>())
+				{
+					FEventFlowElementFinishWarpper FinishWarpper;
+					FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence);
+					for (UEventSequenceEdNode* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNode>())
+					{
+						//TODO 根据边的Node设置Tag
+						FinishWarpper.EventFlowFinishBranch.Add(NAME_None, NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog));
+					}
+					Branch->EventFlowElementFinishList.Add(FinishWarpper);
+				}
+			}
+		}
+		return Sequence;
+	}
+	else
+	{
+		MessageLog.Error(TEXT("@@ 中任务序列丢失"), this);
+		return nullptr;
+	}
 }
 
 FPinConnectionResponse UEventSequenceBranchEdNode::CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const

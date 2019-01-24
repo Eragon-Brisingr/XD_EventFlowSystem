@@ -6,6 +6,8 @@
 #include "Engine/BlueprintGeneratedClass.h"
 #include "EventFlowGraphBlueprintGeneratedClass.generated.h"
 
+class UXD_EventFlowSequenceBase;
+
 /**
  * 
  */
@@ -30,8 +32,11 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowGraphBlueprintGeneratedClass : public UBl
 	GENERATED_BODY()
 public:
 	UPROPERTY()
-	class UXD_EventFlowSequenceBase* StartSequence;
+	UXD_EventFlowSequenceBase* StartSequence;
 
 	UPROPERTY()
 	TArray<FEventFlowDelegateRuntimeBinding> Bindings;
+
+	UPROPERTY()
+	TArray<UXD_EventFlowSequenceBase*> SequenceList;
 };

@@ -22,11 +22,9 @@ public:
 	FText GetNodeTitle();
     virtual FText GetNodeTitle_Implementation();
 
-	virtual void ClearLinks(){}
-	virtual bool RemoveLinkedNode(UEventFlowGraphNodeBase* NodeToRemove) { return false; }
-	void LinkArgumentNodeAsChild(UEventFlowGraphNodeBase * Child) {}
-
 	virtual TArray<UEventFlowGraphNodeBase*> GetChildNodes() { return {}; }
+
+	virtual UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const;
 public:
 	UPROPERTY()
 	uint8 bIsVariable : 1;

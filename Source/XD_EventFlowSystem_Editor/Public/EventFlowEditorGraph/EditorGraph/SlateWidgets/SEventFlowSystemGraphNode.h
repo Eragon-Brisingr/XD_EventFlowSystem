@@ -24,6 +24,8 @@ public:
 	void SetOwner(const TSharedRef<SGraphPanel>& OwnerPanel) override;
 protected:
 	void OnNameTextCommited(const FText& InText, ETextCommit::Type CommitInfo);
+	FSlateColor GetBorderBackgroundColor() const;
+	FReply OnMouseDown(const FGeometry& SenderGeometry, const FPointerEvent& MouseEvent);
 public:
 	TSharedPtr<SBox> ContentWidget;
 

@@ -82,7 +82,6 @@ void FEventFlowSystemEditor::BlueprintCompiled(class UBlueprint* Blueprint)
 	{
 		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph))
 		{
-			EdGraph->BuildGraph();
 			EdGraph->RefreshNodes();
 		}
 	}
@@ -138,13 +137,6 @@ UEventFlowSystemEditorGraph* FEventFlowSystemEditor::GetEditorGraph() const
 
 void FEventFlowSystemEditor::SaveAsset_Execute()
 {
-	if (GetEventFlowBlueprint())
-	{
-		if (UEventFlowSystemEditorGraph* EdGraph = Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph))
-		{
-			EdGraph->BuildGraph();
-		}
-	}
 	FBlueprintEditor::SaveAsset_Execute();
 }
 
