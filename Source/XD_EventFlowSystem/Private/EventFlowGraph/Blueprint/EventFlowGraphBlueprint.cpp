@@ -22,41 +22,12 @@ void UEventFlowGraphBlueprint::GetReparentingRules(TSet<const UClass*>& AllowedC
 	AllowedChildrenOfClasses.Add(UXD_EventFlowBase::StaticClass());
 }
 
-#if WITH_EDITOR
-TArray<UEventFlowGraphNodeBase*> UEventFlowGraphBlueprint::GetAllNodes() const
-{
-	if (StartSequence)
-	{
-		struct FNodeCollector
-		{
-			static void Collector(UEventFlowGraphNodeBase* Root, TArray<UEventFlowGraphNodeBase*>& Res)
-			{
-				Res.Add(Root);
-				for (UEventFlowGraphNodeBase* Child : Root->GetChildNodes())
-				{
-					Collector(Child, Res);
-				}
-			}
-		};
-		TArray<UEventFlowGraphNodeBase*> Res;
-		FNodeCollector::Collector((UEventFlowGraphNodeBase*)StartSequence, Res);
-		return Res;
-	}
-	return {};
-}
-#endif // WITH_EDITOR
-
-bool FEventFlowDelegateEditorBinding::DoesBindingTargetExist(UEventFlowGraphBlueprint* Blueprint) const
-{
-	//return Blueprint->EventFlowGraph->GetAllNodes().ContainsByPredicate([this](const UEventFlowGraphNodeBase* Node) {return Node && Node == Object.Get(); });
-	return false;
-}
-
 FEventFlowDelegateRuntimeBinding FEventFlowDelegateEditorBinding::ToRuntimeBinding(UEventFlowGraphBlueprint* Blueprint) const
 {
 	FEventFlowDelegateRuntimeBinding RuntimeBinding;
 	RuntimeBinding.FunctionName = GetFunctionName(Blueprint);
-	RuntimeBinding.ObjectName = Object.Get()->GetName();
+	RuntimeBinding.PropertyName = PropertyName;
+	RuntimeBinding.ObjectName = CastChecked<UEventFlowGraphNodeBase>(Object.Get())->GetVarRefName();
 	return RuntimeBinding;
 }
 

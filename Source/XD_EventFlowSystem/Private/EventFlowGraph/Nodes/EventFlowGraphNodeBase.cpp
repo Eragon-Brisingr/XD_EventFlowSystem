@@ -23,4 +23,9 @@ UEventFlowGraphNodeBase* UEventFlowGraphNodeBase::GetDuplicatedNode(UObject* Out
 	return UXD_ObjectFunctionLibrary::DuplicateObject(this, Outer, GetFName());
 }
 
+FString UEventFlowGraphNodeBase::GetVarRefName() const
+{
+	return FString::Printf(TEXT("Ref_%s"), *GetName());
+}
+
 #undef LOCTEXT_NAMESPACE

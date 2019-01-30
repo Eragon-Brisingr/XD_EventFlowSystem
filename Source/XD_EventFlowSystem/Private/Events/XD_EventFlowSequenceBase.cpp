@@ -50,11 +50,39 @@ UEventFlowGraphNodeBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject* O
 
 void UXD_EventFlowSequenceBase::ActiveEventFlowSequence()
 {
-	EventFlowSystem_Display_Log("%s激活[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *GetDescribe().ToString());
+	EventFlowSystem_Display_Log("%s激活[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
 	{
 		EventFlowElement->ActivateEventFlowElement();
 	}
+	WhenActiveEventFlowSequence();
+	OnSequenceActived.Broadcast(this);
+}
+
+void UXD_EventFlowSequenceBase::DeactiveEventFlowSequence()
+{
+	EventFlowSystem_Display_Log("%s停止激活[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
+	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
+	{
+		EventFlowElement->UnactiveEventFlowElement();
+	}
+	WhenDeactiveEventFlowSequence();
+	OnSequenceDeactived.Broadcast(this);
+}
+
+void UXD_EventFlowSequenceBase::InitEventFlowSequence()
+{
+	OnSequenceInited.Broadcast(this);
+}
+
+void UXD_EventFlowSequenceBase::FinishEventFlowSequence()
+{
+	OnSequenceFinished.Broadcast(this);
+}
+
+UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetSequenceInstance(UObject* Outer) const
+{
+	return CastChecked<UXD_EventFlowSequenceBase>(GetDuplicatedNode(Outer));
 }
 
 bool UXD_EventFlowSequenceBase::HasMustEventFlowElement()
@@ -69,12 +97,9 @@ bool UXD_EventFlowSequenceBase::HasMustEventFlowElement()
 	return false;
 }
 
-void UXD_EventFlowSequenceBase::DeactiveEventFlowSequence()
+void UXD_EventFlowSequenceBase::WhenDeactiveEventFlowSequence()
 {
-	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
-	{
-		EventFlowElement->UnactiveEventFlowElement();
-	}
+
 }
 
 void UXD_EventFlowSequenceBase::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
@@ -171,15 +196,15 @@ void UEventFlowSequence_Branch::ReinitEventFlowSequence()
 	}
 }
 
-void UEventFlowSequence_Branch::ActiveEventFlowSequence()
+void UEventFlowSequence_Branch::WhenActiveEventFlowSequence()
 {
-	Super::ActiveEventFlowSequence();
+	Super::WhenActiveEventFlowSequence();
 	InvokeActiveFinishList();
 }
 
-void UEventFlowSequence_Branch::DeactiveEventFlowSequence()
+void UEventFlowSequence_Branch::WhenDeactiveEventFlowSequence()
 {
-	Super::DeactiveEventFlowSequence();
+	Super::WhenDeactiveEventFlowSequence();
 	DeactiveFinishBranchs();
 }
 
@@ -204,16 +229,16 @@ void UEventFlowSequence_Branch::InvokeFinishEventFlowSequence(UXD_EventFlowEleme
 					{
 						if (NextSequenceTemplate->IsValid())
 						{
-							OwingEventFlow->SetAndActiveNextEventFlowSequence((UXD_EventFlowSequenceBase*)NextSequenceTemplate->Get()->GetDuplicatedNode(OwingEventFlow));
+							OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequenceTemplate->Get()->GetSequenceInstance(OwingEventFlow));
 						}
 						else
 						{
-							EventFlowSystem_Error_Log("事件流[%s]结束序列[%s]中标签为[%s]的分支模板失效", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
+							EventFlowSystem_Error_Log("事件流[%s]结束序列%s中标签为[%s]的分支模板失效", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
 						}
 					}
 					else
 					{
-						EventFlowSystem_Error_Log("事件流[%s]结束序列[%s]中未找到标签[%s]的分支", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
+						EventFlowSystem_Error_Log("事件流[%s]结束序列%s中未找到标签[%s]的分支", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
 					}
 				}
 				else
@@ -298,7 +323,7 @@ void UEventFlowSequence_List::InvokeFinishEventFlowSequence(UXD_EventFlowElement
 	{
 		if (NextSequenceTemplate.IsValid())
 		{
-			OwingEventFlow->SetAndActiveNextEventFlowSequence(UXD_ObjectFunctionLibrary::DuplicateObject(NextSequenceTemplate.Get(), OwingEventFlow));
+			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequenceTemplate->GetSequenceInstance(OwingEventFlow));
 		}
 		else
 		{

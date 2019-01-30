@@ -22,12 +22,12 @@ public:
 	FText GetNodeTitle();
     virtual FText GetNodeTitle_Implementation();
 
-	virtual TArray<UEventFlowGraphNodeBase*> GetChildNodes() { return {}; }
-
 	virtual UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const;
 public:
 	UPROPERTY()
 	uint8 bIsVariable : 1;
+
+	virtual FString GetVarRefName() const;
 };
 
 #undef LOCTEXT_NAMESPACE

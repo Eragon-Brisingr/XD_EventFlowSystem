@@ -16,11 +16,12 @@ struct XD_EVENTFLOWSYSTEM_API FEventFlowDelegateRuntimeBinding
 {
 	GENERATED_BODY()
 public:
-	/** The widget that will be bound to the live data. */
 	UPROPERTY()
 	FString ObjectName;
 
-	/** The function or property we're binding to on the source object. */
+	UPROPERTY()
+	FName PropertyName;
+
 	UPROPERTY()
 	FName FunctionName;
 };

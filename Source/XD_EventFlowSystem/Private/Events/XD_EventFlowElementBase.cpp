@@ -2,6 +2,7 @@
 
 #include "XD_EventFlowElementBase.h"
 #include "XD_DebugFunctionLibrary.h"
+#include "TimerManager.h"
 
 
 #define LOCTEXT_NAMESPACE "游戏事件"
@@ -14,7 +15,7 @@ UXD_EventFlowElementBase::UXD_EventFlowElementBase()
 
 class UWorld* UXD_EventFlowElementBase::GetWorld() const
 {
-	return GetEventFlow() ? GetEventFlow()->GetWorld() : nullptr;
+	return OwingEventFlowSequence ? OwingEventFlowSequence->GetWorld() : nullptr;
 }
 
 bool UXD_EventFlowElementBase::IsSupportedForNetworking() const
@@ -37,6 +38,11 @@ void UXD_EventFlowElementBase::GetLifetimeReplicatedProps(TArray<class FLifetime
 
 }
 
+FString UXD_EventFlowElementBase::GetVarRefName() const
+{
+	return FString::Printf(TEXT("Ref_%s_%s"), *GetOuter()->GetName(), *GetName());
+}
+
 FText UXD_EventFlowElementBase::GetDescribe()
 {
 	return bIsMust ? ReceiveGetDescribe() : FText::Format(LOCTEXT("EventFlowElementFormat", "{0} (可选)"), ReceiveGetDescribe());
@@ -52,7 +58,7 @@ void UXD_EventFlowElementBase::FinishEventFlowElement(const FName& NextBranchTag
 	if (bIsFinished == false)
 	{
 		bIsFinished = true;
-		EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列[%s]中的游戏事件元素[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetEventFlowName().ToString(), *OwingEventFlowSequence->GetDescribe().ToString(), *GetName());
+		EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s中的游戏事件元素%s", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this));
 		OwingEventFlowSequence->InvokeFinishEventFlowSequence(this, NextBranchTag);
 	}
 }
@@ -71,12 +77,20 @@ void UXD_EventFlowElementBase::SetReactive()
 
 void UXD_EventFlowElementBase::ActivateEventFlowElement()
 {
-	EventFlowSystem_Display_Log("%s激活[%s]游戏事件序列[%s]中的[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *OwingEventFlowSequence->GetDescribe().ToString(), *GetName());
+#if WITH_EDITOR
+	check(bIsActive == false);
+	bIsActive = true;
+#endif
+	EventFlowSystem_Display_Log("%s激活[%s]游戏事件序列%s中的%s", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	WhenActivateEventFlowElement(GetOwningCharacter(), GetOwingController());
 }
 
 void UXD_EventFlowElementBase::UnactiveEventFlowElement()
 {
+#if WITH_EDITOR
+	check(bIsActive);
+	bIsActive = false;
+#endif
 	WhenUnactiveEventFlowElement(GetOwningCharacter(), GetOwingController());
 	if (bIsFinished)
 	{
@@ -101,7 +115,8 @@ class UXD_EventFlowBase* UXD_EventFlowElementBase::GetEventFlow() const
 
 void UElementTest::WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
 {
-	FinishEventFlowElement();
+ 	FTimerHandle TimerHandle;
+ 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]() { FinishEventFlowElement(); }), FMath::RandBool() ? 1.f : 2.f, false);
 }
 
 #undef LOCTEXT_NAMESPACE

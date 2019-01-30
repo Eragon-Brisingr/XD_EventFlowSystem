@@ -18,11 +18,13 @@ class XD_EVENTFLOWSYSTEM_API UXD_EventFlowElementBase : public UEventFlowGraphNo
 public:
 	UXD_EventFlowElementBase();
 
-	virtual class UWorld* GetWorld() const override;
+	class UWorld* GetWorld() const override;
 
-	virtual bool IsSupportedForNetworking()const override;
+	bool IsSupportedForNetworking()const override;
 
-	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
+	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
+
+	FString GetVarRefName() const override;
 private:
 	UPROPERTY(SaveGame, Replicated)
 	uint8 bIsFinished : 1;
@@ -69,6 +71,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	void SetReactive();
 public:
+#if WITH_EDITORONLY_DATA
+	uint8 bIsActive : 1;
+#endif
+
 	void ActivateEventFlowElement();
 	//用于激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
@@ -85,11 +91,6 @@ public:
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
 	void WhenFinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 	virtual void WhenFinishEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
-
-	//假如该游戏事件元素能产生不同分支需重载下面几个函数
-#if WITH_EDITORONLY_DATA
-	bool bHasMultiBranch;
-#endif
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "角色|游戏事件")
 	class UXD_EventFlowSequenceBase* OwingEventFlowSequence;
@@ -107,5 +108,5 @@ class XD_EVENTFLOWSYSTEM_API UElementTest : public UXD_EventFlowElementBase
 {
 	GENERATED_BODY()
 public:
-	virtual void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
+	void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
 };

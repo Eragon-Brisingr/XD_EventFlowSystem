@@ -140,7 +140,7 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 	CreatePinWidgets();
 	CreateContent();
 
-	UEventSequenceEdNode* SequenceEdNode = Cast<UEventSequenceEdNode>(GraphNode);
+	UEventSequenceEdNodeBase* SequenceEdNode = Cast<UEventSequenceEdNodeBase>(GraphNode);
 	if (SequenceEdNode)
 	{
 		for (int32 i = 0; i < SequenceEdNode->EventElements.Num(); i++)

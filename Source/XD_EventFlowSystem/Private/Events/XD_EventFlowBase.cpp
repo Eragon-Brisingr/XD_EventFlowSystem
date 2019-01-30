@@ -16,20 +16,11 @@ UXD_EventFlowBase::UXD_EventFlowBase()
 
 }
 
-// UXD_EventFlowBase* UXD_EventFlowBase::NewEventFlow(UObject* WorldContextObject, class UXD_EventFlowGraph* EventFlowGraph)
-// {
-// 	UXD_EventFlowBase* EventFlow = NewObject<UXD_EventFlowBase>(WorldContextObject);
-// 	EventFlow->WorldContext = WorldContextObject->GetWorld()->GetGameInstance()->GetWorldContext();
-// 	EventFlow->EventFlowTemplate = EventFlowGraph;
-// 	return EventFlow;
-// }
-
 void UXD_EventFlowBase::ReinitEventFlow(class UXD_EventFlowManager* EventFlowOwner)
 {
 	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
 	{
 		this->EventFlowOwner = EventFlowOwner;
-		WorldContext = EventFlowOwner->GetWorld()->GetGameInstance()->GetWorldContext();
 		if (EventFlowSequence)
 		{
 			EventFlowSequence->OwingEventFlow = this;
@@ -57,7 +48,7 @@ void UXD_EventFlowBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyCh
 
 class UWorld* UXD_EventFlowBase::GetWorld() const
 {
-	return EventFlowOwner ? EventFlowOwner->GetWorld() : WorldContext ? WorldContext->World() : nullptr;
+	return EventFlowOwner ? EventFlowOwner->GetWorld() : nullptr;
 }
 
 bool UXD_EventFlowBase::IsSupportedForNetworking() const
@@ -91,36 +82,58 @@ void UXD_EventFlowBase::ReplicatedEventFlowSequence(bool& WroteSomething, class 
 
 void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 {
-	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
+	if (UEventFlowGraphBlueprintGeneratedClass* GeneratedClass = Cast<UEventFlowGraphBlueprintGeneratedClass>(GetClass()))
 	{
-		if (EventFlowSequence)
+		for (UXD_EventFlowSequenceBase* AddedEventFlowSequence : TSet<UXD_EventFlowSequenceBase*>(CurrentEventFlowSequenceList).Difference(TSet<UXD_EventFlowSequenceBase*>(PreEventFlowSequenceList)))
 		{
-			EventFlowSequence->OwingEventFlow = this;
+			if (AddedEventFlowSequence)
+			{
+				AddedEventFlowSequence->OwingEventFlow = this;
+
+				if (AddedEventFlowSequence->bIsVariable)
+				{
+					UProperty* RefProperty = GetClass()->FindPropertyByName(*AddedEventFlowSequence->GetVarRefName());
+					*RefProperty->ContainerPtrToValuePtr<UObject*>(this) = AddedEventFlowSequence;
+
+					for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
+					{
+						UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(AddedEventFlowSequence->GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
+						if (Binding.ObjectName == AddedEventFlowSequence->GetVarRefName())
+						{
+							FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(AddedEventFlowSequence);
+							ScriptDelegate->BindUFunction(this, Binding.FunctionName);
+						}
+					}
+				}
+			}
 		}
-	}
-	if (CurrentEventFlowSequenceList.Num() > 1)
-	{
-		WhenFinishedEventFlowSequence(CurrentEventFlowSequenceList[CurrentEventFlowSequenceList.Num() - 2], GetUnderwayEventFlowSequence());
+
+		GeneratedClass->BindDynamicDelegates(GetClass(), this);
+
+		if (CurrentEventFlowSequenceList.Num() > 1)
+		{
+			WhenFinishedEventFlowSequence(CurrentEventFlowSequenceList[CurrentEventFlowSequenceList.Num() - 2], GetUnderwayEventFlowSequence());
+		}
+
+		PreEventFlowSequenceList = CurrentEventFlowSequenceList;
 	}
 }
 
 void UXD_EventFlowBase::SetAndActiveNextEventFlowSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence)
 {
 	UXD_EventFlowSequenceBase* FinishEventFlowSequence = GetUnderwayEventFlowSequence();
-	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetEventFlowName().ToString(), *FinishEventFlowSequence->GetDescribe().ToString());
+	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(FinishEventFlowSequence));
 	if (NextEventFlowSequence)
 	{
 		FinishEventFlowSequence->DeactiveEventFlowSequence();
-		CurrentEventFlowSequenceList.Add(NextEventFlowSequence);
-		OnRep_CurrentEventFlowSequenceList();
-		NextEventFlowSequence->ActiveEventFlowSequence();
-		WhenFinishedEventFlowSequence(FinishEventFlowSequence, NextEventFlowSequence);
+		FinishEventFlowSequence->FinishEventFlowSequence();
+		AddNextSequence(NextEventFlowSequence);
 	}
 	else
 	{
-		WhenFinishedEventFlowSequence(FinishEventFlowSequence, nullptr);
 		FinishEventFlowSucceed();
 	}
+	WhenFinishedEventFlowSequence(FinishEventFlowSequence, NextEventFlowSequence);
 }
 
 class APawn* UXD_EventFlowBase::GetEventFlowOwnerCharacter() const
@@ -150,9 +163,8 @@ void UXD_EventFlowBase::ActiveEventFlow(class UXD_EventFlowManager* EventFlowExe
 			EventFlowOwner = EventFlowExecuter;
 			EventFlowState = EEventFlowState::Underway;
 
-			CurrentEventFlowSequenceList.Add((UXD_EventFlowSequenceBase*)GeneratedClass->StartSequence->GetDuplicatedNode(this));
-			OnRep_CurrentEventFlowSequenceList();
-			GetUnderwayEventFlowSequence()->ActiveEventFlowSequence();
+			UXD_EventFlowSequenceBase* Instance = GeneratedClass->StartSequence->GetSequenceInstance(this);
+			AddNextSequence(Instance);
 		}
 		else
 		{
@@ -168,6 +180,7 @@ void UXD_EventFlowBase::ActiveEventFlow(class UXD_EventFlowManager* EventFlowExe
 void FinishEventFlowImpl(UXD_EventFlowBase* EventFlow, UXD_EventFlowManager* EventFlowOwner)
 {
 	EventFlow->GetUnderwayEventFlowSequence()->DeactiveEventFlowSequence();
+	EventFlow->GetUnderwayEventFlowSequence()->FinishEventFlowSequence();
 	EventFlowOwner->UnderwayEventFlowList.Remove(EventFlow);
 	EventFlowOwner->FinishEventFlowList.Add(EventFlow);
 	EventFlowOwner->OnRep_UnderwayEventFlowList();
@@ -193,4 +206,12 @@ void UXD_EventFlowBase::FinishEventFlowFailed()
 void UXD_EventFlowBase::WhenFinishedEventFlowSequence_Implementation(class UXD_EventFlowSequenceBase* FinishedEventFlowSequence, class UXD_EventFlowSequenceBase* UnderwayEventFlowSequences)
 {
 	EventFlowOwner->OnFinishedEventFlowSequence.Broadcast(this, FinishedEventFlowSequence, UnderwayEventFlowSequences);
+}
+
+void UXD_EventFlowBase::AddNextSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence)
+{
+	CurrentEventFlowSequenceList.Add(NextEventFlowSequence);
+	OnRep_CurrentEventFlowSequenceList();
+	NextEventFlowSequence->InitEventFlowSequence();
+	NextEventFlowSequence->ActiveEventFlowSequence();
 }

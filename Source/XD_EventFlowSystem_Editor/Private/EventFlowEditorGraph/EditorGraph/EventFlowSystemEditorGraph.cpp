@@ -19,7 +19,7 @@ void UEventFlowSystemEditorGraph::RefreshNodes()
 
 UXD_EventFlowSequenceBase* UEventFlowSystemEditorGraph::BuildSequenceTreeInstance(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
 {
-	for (UEventSequenceEdNode* SequenceEditorNode : StartNode->GetChildNodes<UEventSequenceEdNode>())
+	for (UEventSequenceEdNodeBase* SequenceEditorNode : StartNode->GetChildNodes<UEventSequenceEdNodeBase>())
 	{
 		return SequenceEditorNode->BuildSequenceTree(Outer, MessageLog);
 	}
@@ -29,4 +29,18 @@ UXD_EventFlowSequenceBase* UEventFlowSystemEditorGraph::BuildSequenceTreeInstanc
 UEventFlowGraphBlueprint* UEventFlowSystemEditorGraph::GetBlueprint() const
 {
 	return CastChecked<UEventFlowGraphBlueprint>(GetOuter());
+}
+
+TArray<class UEventFlowSystemEditorNodeBase*> UEventFlowSystemEditorGraph::GetAllNodes() const
+{
+	TArray<class UEventFlowSystemEditorNodeBase*> Res;
+	for (UEdGraphNode* Node : Nodes)
+	{
+		if (UEventFlowSystemEditorNodeBase* EdNode = Cast<UEventFlowSystemEditorNodeBase>(Node))
+		{
+			Res.Add(EdNode);
+		}
+	}
+	Res.Append(EventElements);
+	return Res;
 }

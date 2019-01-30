@@ -29,8 +29,6 @@ public:
 	UPROPERTY()
 	FGuid MemberFunctionGuid;
 
-	bool DoesBindingTargetExist(UEventFlowGraphBlueprint* Blueprint) const;
-
 	FEventFlowDelegateRuntimeBinding ToRuntimeBinding(UEventFlowGraphBlueprint* Blueprint) const;
 
 	FName GetFunctionName(UEventFlowGraphBlueprint* Blueprint) const;
@@ -56,7 +54,5 @@ public:
 
 	UPROPERTY()
 	TArray<FEventFlowDelegateEditorBinding> Bindings;
-
-	TArray<UEventFlowGraphNodeBase*> GetAllNodes() const;
 #endif
 };

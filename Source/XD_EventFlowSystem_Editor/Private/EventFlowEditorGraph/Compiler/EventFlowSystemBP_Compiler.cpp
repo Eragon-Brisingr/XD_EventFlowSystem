@@ -44,18 +44,21 @@ void FEventFlowSystemBP_Compiler::CreateClassVariablesFromBlueprint()
 
 	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetGraphBlueprint();
 
-	for (UEventFlowGraphNodeBase* Node : EditorGraph_Blueprint->GetAllNodes())
+	for (UEdGraphNode* EdNode : Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph)->GetAllNodes())
 	{
-		if (Node->bIsVariable)
+		if (UEventFlowGraphNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(EdNode)->EventFlowBpNode)
 		{
-			UProperty* NodeProperty = CreateVariable(Node->GetFName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
-			if (NodeProperty)
+			if (Node->bIsVariable)
 			{
-				NodeProperty->SetPropertyFlags(CPF_BlueprintVisible);
-				NodeProperty->SetPropertyFlags(CPF_BlueprintReadOnly);
-				NodeProperty->SetPropertyFlags(CPF_Instanced);
-				NodeProperty->SetPropertyFlags(CPF_RepSkip);
-				NodeProperty->SetMetaData(TEXT("Category"), TEXT("设计图表引用"));
+				UProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
+				if (NodeProperty)
+				{
+					NodeProperty->SetPropertyFlags(CPF_BlueprintVisible);
+					NodeProperty->SetPropertyFlags(CPF_BlueprintReadOnly);
+					NodeProperty->SetPropertyFlags(CPF_Instanced);
+					NodeProperty->SetPropertyFlags(CPF_RepSkip);
+					NodeProperty->SetMetaData(TEXT("Category"), TEXT("设计图表引用"));
+				}
 			}
 		}
 	}
@@ -75,6 +78,7 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 		UEventFlowGraphBlueprint* EventFlowBlueprint = CastChecked<UEventFlowGraphBlueprint>(Class->ClassGeneratedBy);
 		if (UEventFlowSystemEditorGraph* DesignerGraph = Cast<UEventFlowSystemEditorGraph>(EventFlowBlueprint->EdGraph))
 		{
+			BlueprintGeneratedClass->SequenceList.Empty();
 			BlueprintGeneratedClass->StartSequence = DesignerGraph->BuildSequenceTreeInstance(BlueprintGeneratedClass, MessageLog);
 			EventFlowBlueprint->StartSequence = BlueprintGeneratedClass->StartSequence;
 			if (BlueprintGeneratedClass->StartSequence == nullptr)
@@ -83,7 +87,6 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 			}
 		}
 
-
 		BlueprintGeneratedClass->Bindings.Empty();
 
 		for (int32 Idx = 0; Idx < EventFlowBlueprint->Bindings.Num(); ++Idx)
@@ -91,7 +94,7 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 			const FEventFlowDelegateEditorBinding& Binding = EventFlowBlueprint->Bindings[Idx];
 			if (IsBindingValid(Binding, Class, EventFlowBlueprint, MessageLog))
 			{
-				if (Binding.DoesBindingTargetExist(EventFlowBlueprint))
+				if (DoesBindingTargetExist(Binding, EventFlowBlueprint))
 				{
 					BlueprintGeneratedClass->Bindings.Add(Binding.ToRuntimeBinding(EventFlowBlueprint));
 					continue;
@@ -128,6 +131,12 @@ bool FEventFlowSystemBP_Compiler::IsBindingValid(const FEventFlowDelegateEditorB
 		}
 	}
 	return false;
+}
+
+bool FEventFlowSystemBP_Compiler::DoesBindingTargetExist(const FEventFlowDelegateEditorBinding& Binding, class UEventFlowGraphBlueprint* Blueprint)
+{
+	UEventFlowSystemEditorGraph* Graph = Cast<UEventFlowSystemEditorGraph>(Blueprint->EdGraph);
+	return Graph->GetAllNodes().ContainsByPredicate([&](const UEventFlowSystemEditorNodeBase* Node) {return Node && Node->EventFlowBpNode && Node->EventFlowBpNode == Binding.Object.Get(); });
 }
 
 #undef LOCTEXT_NAMESPACE

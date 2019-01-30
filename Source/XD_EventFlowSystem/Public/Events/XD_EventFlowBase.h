@@ -33,8 +33,6 @@ public:
 #if WITH_EDITOR
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif //WITH_EDITOR
-	struct FWorldContext* WorldContext;
-
 	virtual class UWorld* GetWorld() const override;
 
 	virtual bool IsSupportedForNetworking() const override;
@@ -63,6 +61,8 @@ public:
 	TArray<UXD_EventFlowSequenceBase*> CurrentEventFlowSequenceList;
 	UFUNCTION()
 	void OnRep_CurrentEventFlowSequenceList();
+	UPROPERTY()
+	TArray<UXD_EventFlowSequenceBase*> PreEventFlowSequenceList;
 
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	FORCEINLINE UXD_EventFlowSequenceBase* GetUnderwayEventFlowSequence() const
@@ -98,5 +98,8 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent, Category = "游戏事件")
 	void InitEventFlow();
-	void InitEventFlow_Implementation(){}
+	void InitEventFlow_Implementation() {}
+
+private:
+	void AddNextSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence);
 };

@@ -13,9 +13,9 @@ class UEventFlowSequence_Branch;
 class UEventFlowSequence_List;
 class UXD_EventFlowSequenceBase;
 class UXD_EventFlowElementBase;
-class UEventSequenceEdNode;
+class UEventSequenceEdNodeBase;
 class FCompilerResultsLog;
-class UEventSequenceBranchEdNode;
+class UEventSequenceBranch_SelectionEdNode;
 class UEventFlowGraphBlueprintGeneratedClass;
 
 /**
@@ -58,7 +58,7 @@ public:
 	}
 
 	template<typename T>
-	T* DuplicatedBpNode(UObject* Outer)
+	T* DuplicatedBpNode(UObject* Outer) const
 	{
 		T* InstanceNode = CastChecked<T>(StaticDuplicateObject(EventFlowBpNode, Outer, *EventFlowBpNode->GetName(), RF_Transactional));
 		InstanceNode->SetFlags(RF_ArchetypeObject | RF_DefaultSubObject);
@@ -103,13 +103,13 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	FNewElement_SchemaAction() :FEdGraphSchemaAction(), NewElementClass(nullptr) {}
-	FNewElement_SchemaAction(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, UEventSequenceEdNode* SequenceNode, TSubclassOf<UXD_EventFlowElementBase> NewElementClass) :FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping), SequenceNode(SequenceNode), NewElementClass(NewElementClass) {}
+	FNewElement_SchemaAction(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, UEventSequenceEdNodeBase* SequenceNode, TSubclassOf<UXD_EventFlowElementBase> NewElementClass) :FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping), SequenceNode(SequenceNode), NewElementClass(NewElementClass) {}
 
 	/** Execute this action, given the graph and schema, and possibly a pin that we were dragged from. Returns a node that was created by this action (if any). */
 	UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 
 	UPROPERTY()
-	UEventSequenceEdNode* SequenceNode;
+	UEventSequenceEdNodeBase* SequenceNode;
 	TSubclassOf<UXD_EventFlowElementBase> NewElementClass;
 };
 
@@ -120,14 +120,14 @@ public:
 	GENERATED_USTRUCT_BODY()
 
 	FNewBranch_SchemaAction() :FEdGraphSchemaAction(), NewElementClass(nullptr) {}
-	FNewBranch_SchemaAction(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, UEventSequenceEdNode* SequenceEdNode, TSubclassOf<UXD_EventFlowElementBase> NewElementClass)
+	FNewBranch_SchemaAction(FText InNodeCategory, FText InMenuDesc, FText InToolTip, const int32 InGrouping, UEventSequenceEdNodeBase* SequenceEdNode, TSubclassOf<UXD_EventFlowElementBase> NewElementClass)
 		:FEdGraphSchemaAction(InNodeCategory, InMenuDesc, InToolTip, InGrouping), SequenceEdNode(SequenceEdNode), NewElementClass(NewElementClass) {}
 
 	/** Execute this action, given the graph and schema, and possibly a pin that we were dragged from. Returns a node that was created by this action (if any). */
 	UEdGraphNode* PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode = true) override;
 
 	UPROPERTY()
-	UEventSequenceEdNode* SequenceEdNode;
+	UEventSequenceEdNodeBase* SequenceEdNode;
 
 	TSubclassOf<UXD_EventFlowElementBase> NewElementClass;
 };
@@ -141,32 +141,49 @@ public:
 	bool HasOutputPins() override { return false; }
 
 	UPROPERTY()
-	UEventSequenceEdNode* ParentNode;
+	UEventSequenceEdNodeBase* ParentNode;
 
 	void DestroyNode() override;
 };
 
-UCLASS()
-class UEventSequenceEdNode : public UEventFlowSystemEditorNodeBase
+UCLASS(abstract)
+class UEventSequenceEdNodeBase : public UEventFlowSystemEditorNodeBase
 {
 	GENERATED_BODY()
 public:
 	void GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const override;
 
-	FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const override;
-	bool GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
-
 	void AddElement(UEventElementEdNode* Element);
 	void RemoveElement(UEventElementEdNode* Element);
 
-	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog);
+	virtual UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
+
+	static TSubclassOf<UEventSequenceEdNodeBase> GetEdNodeClassByRuntimeClass(const TSubclassOf<UXD_EventFlowSequenceBase>& RunTimeSequence);
 public:
 	UPROPERTY()
 	TArray<UEventElementEdNode*> EventElements;
 };
 
 UCLASS()
-class UEventSequenceBranchEdNode : public UEventFlowSystemEditorNodeBase
+class UEventSequenceListEdNode : public UEventSequenceEdNodeBase
+{
+	GENERATED_BODY()
+public:
+	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+};
+
+UCLASS()
+class UEventSequenceBranchEdNode : public UEventSequenceEdNodeBase
+{
+	GENERATED_BODY()
+public:
+	FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const override;
+	bool GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
+	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+};
+
+UCLASS()
+class UEventSequenceBranch_SelectionEdNode : public UEventFlowSystemEditorNodeBase
 {
 	GENERATED_BODY()
 public:

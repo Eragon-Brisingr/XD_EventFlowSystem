@@ -50,11 +50,14 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
 	class UXD_EventFlowBase* OwingEventFlow;
 
-	virtual void ActiveEventFlowSequence();
+	void ActiveEventFlowSequence();
+	void DeactiveEventFlowSequence();
+	void InitEventFlowSequence();
+	void FinishEventFlowSequence();
+
+	UXD_EventFlowSequenceBase* GetSequenceInstance(UObject* Outer) const;
 
 	bool HasMustEventFlowElement();
-
-	virtual void DeactiveEventFlowSequence();
 
 	//任务元素向任务序列申请完成该序列，是否完成交由该任务序列判断
 	virtual void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
@@ -65,9 +68,30 @@ public:
 	bool IsEveryMustEventFlowElementFinished() const;
 
 	virtual void DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch);
-public:
+
 	UFUNCTION(BlueprintPure, Category = "游戏性|游戏事件")
 	class APawn* GetEventFlowOwnerCharacter() const;
+
+protected:
+	virtual void WhenActiveEventFlowSequence() {}
+
+	virtual void WhenDeactiveEventFlowSequence();
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceActived, UXD_EventFlowSequenceBase*, Sequence);
+	UPROPERTY(BlueprintAssignable)
+	FOnSequenceActived OnSequenceActived;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceDeactived, UXD_EventFlowSequenceBase*, Sequence);
+	UPROPERTY(BlueprintAssignable)
+	FOnSequenceDeactived OnSequenceDeactived;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceInited, UXD_EventFlowSequenceBase*, Sequence);
+	UPROPERTY(BlueprintAssignable)
+	FOnSequenceInited OnSequenceInited;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceFinished, UXD_EventFlowSequenceBase*, Sequence);
+	UPROPERTY(BlueprintAssignable)
+	FOnSequenceFinished OnSequenceFinished;
 };
 
 USTRUCT(BlueprintType)
@@ -95,9 +119,9 @@ public:
 
 	void ReinitEventFlowSequence() override;
 
-	void ActiveEventFlowSequence() override;
+	void WhenActiveEventFlowSequence() override;
 
-	void DeactiveEventFlowSequence() override;
+	void WhenDeactiveEventFlowSequence() override;
 
 	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 

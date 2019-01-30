@@ -49,6 +49,8 @@ public class XD_EventFlowSystem_Editor : ModuleRules
                 "BlueprintGraph",
 
                 "XD_EventFlowSystem",
+
+                "XD_UnrealLibraryEx",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

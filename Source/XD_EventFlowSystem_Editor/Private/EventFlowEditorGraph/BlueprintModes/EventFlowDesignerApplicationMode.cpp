@@ -516,8 +516,8 @@ public:
 
 				if (OutObjects.Num() == 1)
 				{
-					UObject* Obj = OutObjects[0].Get();
-					UClass* PropertyClass = Obj->GetClass();
+					UEventFlowGraphNodeBase* BpNode = Cast<UEventFlowGraphNodeBase>(OutObjects[0].Get());
+					UClass* PropertyClass = BpNode->GetClass();
 
 					for (TFieldIterator<UProperty> PropertyIt(PropertyClass, EFieldIteratorFlags::IncludeSuper); PropertyIt; ++PropertyIt)
 					{
@@ -525,7 +525,7 @@ public:
 						
 						if (UMulticastDelegateProperty* MulticastDelegateProperty = Cast<UMulticastDelegateProperty>(Property))
 						{
-							CreateMulticastEventCustomization(DetailLayout, OutObjects[0].Get()->GetFName(), PropertyClass, MulticastDelegateProperty);
+							CreateMulticastEventCustomization(DetailLayout, *BpNode->GetVarRefName(), PropertyClass, MulticastDelegateProperty);
 						}
 					}
 				}
@@ -828,10 +828,10 @@ public:
 			if (UEventFlowGraphNodeBase* Node = Cast<UEventFlowGraphNodeBase>(Obj.Get()))
 			{
 				FName VarName = Node->GetFName();
-				Node->bIsVariable = CheckState == ECheckBoxState::Checked;
-				FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+				Node->bIsVariable = (CheckState == ECheckBoxState::Checked);
 			}
 		}
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
 
 		PropertyView->ForceRefresh();
 	}
