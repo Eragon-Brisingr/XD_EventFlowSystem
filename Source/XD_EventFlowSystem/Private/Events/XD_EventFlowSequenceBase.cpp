@@ -28,6 +28,7 @@ void UXD_EventFlowSequenceBase::GetLifetimeReplicatedProps(TArray<class FLifetim
 	}
 
 	DOREPLIFETIME(UXD_EventFlowSequenceBase, EventFlowElementList);
+	DOREPLIFETIME(UXD_EventFlowSequenceBase, SequenceTemplate);
 }
 
 void UXD_EventFlowSequenceBase::ReplicatedEventFlowElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
@@ -41,12 +42,54 @@ void UXD_EventFlowSequenceBase::ReplicatedEventFlowElement(bool& WroteSomething,
 	}
 }
 
-UEventFlowGraphNodeBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject* Outer) const
+FString UXD_EventFlowSequenceBase::GetVarRefName() const
 {
-	UXD_EventFlowSequenceBase* Sequence = (UXD_EventFlowSequenceBase*)Super::GetDuplicatedNode(Outer);
+	if (SequenceTemplate)
+	{
+		return FString::Printf(TEXT("Ref_%s"), *SequenceTemplate->GetName());
+	}
+	else
+	{
+		return FString::Printf(TEXT("Ref_%s"), *GetName());
+	}
+}
+
+UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject* Outer) const
+{
+	UXD_EventFlowSequenceBase* Sequence = CastChecked<UXD_EventFlowSequenceBase>(Super::GetDuplicatedNode(Outer));
 	Sequence->OwingEventFlow = Cast<UXD_EventFlowBase>(Outer);
+	Sequence->SequenceTemplate = this;
+	for (int32 Idx = 0; Idx < EventFlowElementList.Num(); ++Idx)
+	{
+		Sequence->EventFlowElementList[Idx]->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject);
+		Sequence->EventFlowElementList[Idx]->ElementTemplate = EventFlowElementList[Idx];
+	}
 	Sequence->OnRep_EventFlowElementList();
 	return Sequence;
+}
+
+void UXD_EventFlowSequenceBase::OnRep_SequenceTemplate()
+{
+	if (OwingEventFlow)
+	{
+		TryBindRefAndDelegate(OwingEventFlow);
+	}
+}
+
+void UXD_EventFlowSequenceBase::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow)
+{
+	if (SequenceTemplate && SequenceTemplate->bIsVariable)
+	{
+		BindRefAndDelegate(EventFlow);
+	}
+
+	for (UXD_EventFlowElementBase* Element : EventFlowElementList)
+	{
+		if (Element)
+		{
+			Element->TryBindRefAndDelegate(EventFlow);
+		}
+	}
 }
 
 void UXD_EventFlowSequenceBase::ActiveEventFlowSequence()
@@ -177,7 +220,11 @@ void UXD_EventFlowSequenceBase::OnRep_EventFlowElementList()
 		if (AddedEventFlowElement)
 		{
 			AddedEventFlowElement->OwingEventFlowSequence = this;
-			AddedEventFlowElement->TryBindRefAndDelegate(OwingEventFlow, OwingEventFlow->EventFlowOwner == nullptr || OwingEventFlow->GetEventFlowOwnerController()->Role != ENetRole::ROLE_Authority);
+
+			if (OwingEventFlow)
+			{
+				AddedEventFlowElement->TryBindRefAndDelegate(OwingEventFlow);
+			}
 		}
 	}
 
@@ -186,7 +233,7 @@ void UXD_EventFlowSequenceBase::OnRep_EventFlowElementList()
 
 class APawn* UXD_EventFlowSequenceBase::GetEventFlowOwnerCharacter() const
 {
-	return OwingEventFlow->GetEventFlowOwnerCharacter();
+	return OwingEventFlow ? OwingEventFlow->GetEventFlowOwnerCharacter() : nullptr;
 }
 
 void UEventFlowSequence_Branch::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
@@ -200,7 +247,7 @@ void UEventFlowSequence_Branch::GetLifetimeReplicatedProps(TArray<class FLifetim
 void UEventFlowSequence_Branch::ReplicatedEventFlowElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
 {
 	Super::ReplicatedEventFlowElement(WroteSomething, Channel, Bunch, RepFlags);
-	for (const FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+	for (const FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 	{
 		if (EventFlowElementFinishWarpper.EventFlowElement)
 		{
@@ -212,7 +259,7 @@ void UEventFlowSequence_Branch::ReplicatedEventFlowElement(bool& WroteSomething,
 void UEventFlowSequence_Branch::ReinitEventFlowSequence()
 {
 	Super::ReinitEventFlowSequence();
-	for (FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+	for (FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 	{
 		if (EventFlowElementFinishWarpper.EventFlowElement)
 		{
@@ -244,33 +291,33 @@ void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowE
 	else
 	{
 		UXD_EventFlowSequenceBase* FinishEventFlowSequence = OwingEventFlow->GetUnderwayEventFlowSequence();
-		for (FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+
+		int32 Idx = EventFlowElementFinishList.IndexOfByPredicate([&](const FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper) {return EventFlowElement == EventFlowElementFinishWarpper.EventFlowElement; });
+
+		if (Idx != INDEX_NONE)
 		{
-			if (EventFlowElement == EventFlowElementFinishWarpper.EventFlowElement)
+			const FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper = CastChecked<UEventFlowSequence_Branch>(SequenceTemplate)->EventFlowElementFinishList[Idx];
+			if (EventFlowElementFinishWarpper.EventFlowFinishBranch.Num() > 0)
 			{
-				if (EventFlowElementFinishWarpper.EventFlowFinishBranch.Num() > 0)
+				if (UXD_EventFlowSequenceBase*const* NextSequenceTemplate = EventFlowElementFinishWarpper.EventFlowFinishBranch.Find(NextBranchTag))
 				{
-					if (TSoftObjectPtr<UXD_EventFlowSequenceBase>* NextSequenceTemplate = EventFlowElementFinishWarpper.EventFlowFinishBranch.Find(NextBranchTag))
+					if (NextSequenceTemplate)
 					{
-						if (NextSequenceTemplate->IsValid())
-						{
-							OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequenceTemplate->Get()->GetSequenceInstance(OwingEventFlow));
-						}
-						else
-						{
-							EventFlowSystem_Error_Log("事件流[%s]结束序列%s中标签为[%s]的分支模板失效", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
-						}
+						OwingEventFlow->SetAndActiveNextEventFlowSequence((*NextSequenceTemplate)->GetSequenceInstance(OwingEventFlow));
 					}
 					else
 					{
-						EventFlowSystem_Error_Log("事件流[%s]结束序列%s中未找到标签[%s]的分支", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
+						EventFlowSystem_Error_Log("事件流[%s]结束序列%s中标签为[%s]的分支模板失效", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
 					}
 				}
 				else
 				{
-					OwingEventFlow->SetAndActiveNextEventFlowSequence(nullptr);
+					EventFlowSystem_Error_Log("事件流[%s]结束序列%s中未找到标签[%s]的分支", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
 				}
-				break;
+			}
+			else
+			{
+				OwingEventFlow->SetAndActiveNextEventFlowSequence(nullptr);
 			}
 		}
 	}
@@ -286,18 +333,36 @@ void UEventFlowSequence_Branch::DrawHintInWorld(class AHUD* ARPG_HUD, int32 Inde
 	Super::DrawHintInWorld(ARPG_HUD, Index, IsFinishBranch);
 	if (bIsFinishListActive)
 	{
-		for (FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+		for (FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 		{
 			EventFlowElementFinishWarpper.EventFlowElement->DrawHintInWorld(ARPG_HUD, Index, true);
 		}
 	}
 }
 
-UEventFlowGraphNodeBase* UEventFlowSequence_Branch::GetDuplicatedNode(UObject* Outer) const
+UEventFlowSequence_Branch* UEventFlowSequence_Branch::GetDuplicatedNode(UObject* Outer) const
 {
-	UEventFlowSequence_Branch* Branch = (UEventFlowSequence_Branch*)Super::GetDuplicatedNode(Outer);
+	UEventFlowSequence_Branch* Branch = CastChecked<UEventFlowSequence_Branch>(Super::GetDuplicatedNode(Outer));
+	for (int32 Idx = 0; Idx < EventFlowElementFinishList.Num(); ++Idx)
+	{
+		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject);
+		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ElementTemplate = Branch->EventFlowElementFinishList[Idx].EventFlowElement;
+	}
 	Branch->OnRep_EventFlowElementFinishList();
 	return Branch;
+}
+
+void UEventFlowSequence_Branch::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow)
+{
+	Super::TryBindRefAndDelegate(EventFlow);
+
+	for (FEventFlowElementFinishWrapper& Wrapper : EventFlowElementFinishList)
+	{
+		if (Wrapper.EventFlowElement)
+		{
+			Wrapper.EventFlowElement->TryBindRefAndDelegate(EventFlow);
+		}
+	}
 }
 
 void UEventFlowSequence_Branch::InvokeActiveFinishList()
@@ -312,7 +377,7 @@ void UEventFlowSequence_Branch::InvokeActiveFinishList()
 		{
 			if (bIsFinishListActive == false)
 			{
-				for (FEventFlowElementFinishWarpper& EventFlowElementFinish : EventFlowElementFinishList)
+				for (FEventFlowElementFinishWrapper& EventFlowElementFinish : EventFlowElementFinishList)
 				{
 					EventFlowElementFinish.EventFlowElement->ActivateEventFlowElement();
 				}
@@ -325,7 +390,7 @@ void UEventFlowSequence_Branch::InvokeActiveFinishList()
 void UEventFlowSequence_Branch::DeactiveFinishBranchs()
 {
 	bIsFinishListActive = false;
-	for (FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+	for (FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 	{
 		EventFlowElementFinishWarpper.EventFlowElement->UnactiveEventFlowElement();
 	}
@@ -333,7 +398,7 @@ void UEventFlowSequence_Branch::DeactiveFinishBranchs()
 
 void UEventFlowSequence_Branch::OnRep_EventFlowElementFinishList()
 {
-	for (FEventFlowElementFinishWarpper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
+	for (FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 	{
 		if (EventFlowElementFinishWarpper.EventFlowElement)
 		{
@@ -346,7 +411,8 @@ void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowEle
 {
 	if (IsEveryMustEventFlowElementFinished())
 	{
-		if (NextSequenceTemplate.IsValid())
+		NextSequenceTemplate = Cast<UEventFlowSequence_List>(SequenceTemplate)->NextSequenceTemplate;
+		if (NextSequenceTemplate)
 		{
 			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequenceTemplate->GetSequenceInstance(OwingEventFlow));
 		}

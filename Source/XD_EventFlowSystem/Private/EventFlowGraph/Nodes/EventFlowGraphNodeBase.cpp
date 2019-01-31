@@ -30,24 +30,27 @@ FString UEventFlowGraphNodeBase::GetVarRefName() const
 	return FString::Printf(TEXT("Ref_%s"), *GetName());
 }
 
-void UEventFlowGraphNodeBase::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow, bool ForceTry)
+void UEventFlowGraphNodeBase::BindRefAndDelegate(UXD_EventFlowBase* EventFlow)
 {
+	if (bIsBinded)
+	{
+		return;
+	}
+	bIsBinded = true;
+
 	if (UEventFlowGraphBlueprintGeneratedClass* GeneratedClass = Cast<UEventFlowGraphBlueprintGeneratedClass>(EventFlow->GetClass()))
 	{
-		if (ForceTry || bIsVariable)
-		{
-			FString VarRefName = GetVarRefName();
-			UProperty* RefProperty = EventFlow->GetClass()->FindPropertyByName(*VarRefName);
-			*RefProperty->ContainerPtrToValuePtr<UObject*>(EventFlow) = this;
+		FString VarRefName = GetVarRefName();
+		UProperty* RefProperty = EventFlow->GetClass()->FindPropertyByName(*VarRefName);
+		*RefProperty->ContainerPtrToValuePtr<UObject*>(EventFlow) = this;
 
-			for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
+		for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
+		{
+			UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
+			if (Binding.ObjectName == GetVarRefName())
 			{
-				UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
-				if (Binding.ObjectName == GetVarRefName())
-				{
-					FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(this);
-					ScriptDelegate->BindUFunction(EventFlow, Binding.FunctionName);
-				}
+				FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(this);
+				ScriptDelegate->BindUFunction(EventFlow, Binding.FunctionName);
 			}
 		}
 	}

@@ -36,7 +36,7 @@ void UXD_EventFlowBase::ReactiveEventFlow()
 
 FText UXD_EventFlowBase::GetEventFlowName() const
 {
-	return EventFlowName;
+	return EventFlowName.IsEmpty() ? FText::FromString(UXD_DebugFunctionLibrary::GetDebugName(GetClass())) : EventFlowName;
 }
 
 #if WITH_EDITOR
@@ -89,7 +89,7 @@ void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 			if (AddedEventFlowSequence)
 			{
 				AddedEventFlowSequence->OwingEventFlow = this;
-				AddedEventFlowSequence->TryBindRefAndDelegate(this, EventFlowOwner == nullptr || EventFlowOwner->GetOwner()->Role != ENetRole::ROLE_Authority);
+				AddedEventFlowSequence->TryBindRefAndDelegate(this);
 			}
 		}
 

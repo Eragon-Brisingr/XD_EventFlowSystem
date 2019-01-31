@@ -31,7 +31,10 @@ public:
 
 	virtual FString GetVarRefName() const;
 
-	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow, bool ForceTry);
+protected:
+	uint8 bIsBinded : 1;
+
+	void BindRefAndDelegate(UXD_EventFlowBase* EventFlow);
 };
 
 #undef LOCTEXT_NAMESPACE

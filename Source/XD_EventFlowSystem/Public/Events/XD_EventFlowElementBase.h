@@ -25,7 +25,17 @@ public:
 	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
 
 	FString GetVarRefName() const override;
+
+	UXD_EventFlowElementBase* GetDuplicatedNode(UObject* Outer) const override;
+
+	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_ElementTemplate)
+	const UXD_EventFlowElementBase* ElementTemplate;
+	UFUNCTION()
+	void OnRep_ElementTemplate();
+
+	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow);
 private:
+
 	UPROPERTY(SaveGame, Replicated)
 	uint8 bIsFinished : 1;
 public:
@@ -36,7 +46,6 @@ public:
 	//为真则显示于玩家面板上
 	UPROPERTY(SaveGame, EditAnywhere, BlueprintReadOnly, Category = "游戏事件", Meta = (DisplayName = "显示于玩家面板", ExposeOnSpawn = true), Replicated)
 	uint8 bIsShowEventFlowElement : 1;
-
 public:
 	//获取游戏事件元素描述
 	UFUNCTION(BlueprintPure, Category = "角色|游戏事件")
@@ -84,8 +93,8 @@ public:
 	void UnactiveEventFlowElement();
 	//用于反激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
-	void WhenUnactiveEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
-	virtual void WhenUnactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
+	void WhenDeactiveEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
+	virtual void WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
 	//游戏事件完成后调用
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
@@ -108,5 +117,9 @@ class XD_EVENTFLOWSYSTEM_API UElementTest : public UXD_EventFlowElementBase
 {
 	GENERATED_BODY()
 public:
+	FTimerHandle TimerHandle;
+
 	void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
+
+	void WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
 };

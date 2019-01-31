@@ -35,12 +35,42 @@ void UXD_EventFlowElementBase::GetLifetimeReplicatedProps(TArray<class FLifetime
 	DOREPLIFETIME(UXD_EventFlowElementBase, bIsFinished);
 	DOREPLIFETIME(UXD_EventFlowElementBase, bIsMust);
 	DOREPLIFETIME(UXD_EventFlowElementBase, bIsShowEventFlowElement);
-
+	DOREPLIFETIME(UXD_EventFlowElementBase, ElementTemplate);
 }
 
 FString UXD_EventFlowElementBase::GetVarRefName() const
 {
-	return FString::Printf(TEXT("Ref_%s_%s"), *OwingEventFlowSequence->GetName(), *GetName());
+	if (ElementTemplate && OwingEventFlowSequence->SequenceTemplate)
+	{
+		return FString::Printf(TEXT("Ref_%s_%s"), *OwingEventFlowSequence->SequenceTemplate->GetName(), *ElementTemplate->GetName());
+	}
+	else
+	{
+		return FString::Printf(TEXT("Ref_%s_%s"), *OwingEventFlowSequence->GetName(), *GetName());
+	}
+}
+
+UXD_EventFlowElementBase* UXD_EventFlowElementBase::GetDuplicatedNode(UObject* Outer) const
+{
+	UXD_EventFlowElementBase* Element = CastChecked<UXD_EventFlowElementBase>(Super::GetDuplicatedNode(Outer));
+	Element->ElementTemplate = this;
+	return Element;
+}
+
+void UXD_EventFlowElementBase::OnRep_ElementTemplate()
+{
+	if (OwingEventFlowSequence && OwingEventFlowSequence->OwingEventFlow)
+	{
+		TryBindRefAndDelegate(OwingEventFlowSequence->OwingEventFlow);
+	}
+}
+
+void UXD_EventFlowElementBase::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow)
+{
+	if (ElementTemplate && ElementTemplate->bIsVariable && OwingEventFlowSequence && OwingEventFlowSequence->SequenceTemplate)
+	{
+		BindRefAndDelegate(EventFlow);
+	}
 }
 
 FText UXD_EventFlowElementBase::GetDescribe()
@@ -91,7 +121,7 @@ void UXD_EventFlowElementBase::UnactiveEventFlowElement()
 	check(bIsActive);
 	bIsActive = false;
 #endif
-	WhenUnactiveEventFlowElement(GetOwningCharacter(), GetOwingController());
+	WhenDeactiveEventFlowElement(GetOwningCharacter(), GetOwingController());
 	if (bIsFinished)
 	{
 		WhenFinishEventFlowElement(GetOwningCharacter(), GetOwingController());
@@ -115,8 +145,12 @@ class UXD_EventFlowBase* UXD_EventFlowElementBase::GetEventFlow() const
 
 void UElementTest::WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
 {
- 	FTimerHandle TimerHandle;
  	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]() { FinishEventFlowElement(); }), FMath::RandBool() ? 1.f : 2.f, false);
+}
+
+void UElementTest::WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
 }
 
 #undef LOCTEXT_NAMESPACE

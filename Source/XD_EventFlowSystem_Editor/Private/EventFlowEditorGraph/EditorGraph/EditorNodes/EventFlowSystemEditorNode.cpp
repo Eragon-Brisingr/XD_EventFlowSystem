@@ -179,9 +179,9 @@ UEdGraphNode* FNewElement_SchemaAction::PerformAction(class UEdGraph* ParentGrap
 	if (SequenceNode)
 	{
 		UEventElementEdNode* NewElementEdNode = NewObject<UEventElementEdNode>(ParentGraph, NAME_None, RF_Transactional);
-		NewElementEdNode->OwingGraph = Cast<UEventFlowSystemEditorGraph>(ParentGraph);
+		NewElementEdNode->OwingGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
 		UXD_EventFlowElementBase* Element = NewObject<UXD_EventFlowElementBase>(SequenceNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
-		Element->OwingEventFlowSequence = Cast<UXD_EventFlowSequenceBase>(SequenceNode->EventFlowBpNode);
+		Element->OwingEventFlowSequence = CastChecked<UXD_EventFlowSequenceBase>(SequenceNode->EventFlowBpNode);
 		NewElementEdNode->EventFlowBpNode = Element;
 		NewElementEdNode->CreateNewGuid();
 		NewElementEdNode->PostPlacedNewNode();
@@ -199,8 +199,8 @@ UEdGraphNode* FNewBranch_SchemaAction::PerformAction(class UEdGraph* ParentGraph
 	ParentGraph->Modify();
 
 	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
-
 	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(SequenceEdNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
+	AssetNode->OwingEventFlowSequence = CastChecked<UXD_EventFlowSequenceBase>(SequenceEdNode->EventFlowBpNode);
 	FGraphNodeCreator<UEventSequenceBranch_SelectionEdNode> Creator(*ParentGraph);
 	UEventSequenceBranch_SelectionEdNode* EditorNode = Creator.CreateNode(bSelectNewNode);
 	EditorNode->EventFlowBpNode = AssetNode;
@@ -428,7 +428,7 @@ UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTree(UEventF
 		}
 		for (UEventSequenceBranch_SelectionEdNode* BranchEdNode : Branch_SelectionEdNodes)
 		{
-			FEventFlowElementFinishWarpper FinishWarpper;
+			FEventFlowElementFinishWrapper FinishWarpper;
 			FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Branch);
 			for (UEventSequenceEdNodeBase* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
 			{

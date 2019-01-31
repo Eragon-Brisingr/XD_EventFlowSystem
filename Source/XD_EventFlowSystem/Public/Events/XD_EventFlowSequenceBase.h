@@ -24,7 +24,9 @@ public:
 
 	virtual void ReplicatedEventFlowElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags);
 
-	UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const override;
+	FString GetVarRefName() const override;
+
+	UXD_EventFlowSequenceBase* GetDuplicatedNode(UObject* Outer) const override;
 public:
 	void AddEventFlowElement(UXD_EventFlowElementBase* EventFlowElement);
 
@@ -45,6 +47,13 @@ public:
 	void OnRep_EventFlowElementList();
 	UPROPERTY()
 	TArray<UXD_EventFlowElementBase*> PreEventFlowElementList;
+
+	UPROPERTY(ReplicatedUsing = OnRep_SequenceTemplate, SaveGame)
+	const UXD_EventFlowSequenceBase* SequenceTemplate;
+	UFUNCTION()
+	void OnRep_SequenceTemplate();
+
+	virtual void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow);
 
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
 	class UXD_EventFlowBase* OwingEventFlow;
@@ -74,7 +83,6 @@ public:
 
 	UFUNCTION(BlueprintPure, Category = "游戏性|游戏事件")
 	class APawn* GetEventFlowOwnerCharacter() const;
-
 protected:
 	virtual void WhenActiveEventFlowSequence() {}
 
@@ -98,7 +106,7 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct XD_EVENTFLOWSYSTEM_API FEventFlowElementFinishWarpper
+struct XD_EVENTFLOWSYSTEM_API FEventFlowElementFinishWrapper
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -106,8 +114,8 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "游戏事件", SaveGame)
 	class UXD_EventFlowElementBase* EventFlowElement;
 
-	UPROPERTY(SaveGame)
-	TMap<FName, TSoftObjectPtr<UXD_EventFlowSequenceBase>> EventFlowFinishBranch;
+	UPROPERTY(NotReplicated)
+	TMap<FName, UXD_EventFlowSequenceBase*> EventFlowFinishBranch;
 };
 
 //完成必须的游戏事件元素之后出现分支
@@ -136,14 +144,16 @@ public:
 
 	void DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch) override;
 
-	UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const override;
+	UEventFlowSequence_Branch* GetDuplicatedNode(UObject* Outer) const override;
+
+	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow) override;
 public:
 	void InvokeActiveFinishList();
 
 	void DeactiveFinishBranchs();
 public:
 	UPROPERTY(BlueprintReadWrite, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementFinishList, SaveGame)
-	TArray<FEventFlowElementFinishWarpper> EventFlowElementFinishList;
+	TArray<FEventFlowElementFinishWrapper> EventFlowElementFinishList;
 	UFUNCTION()
 	void OnRep_EventFlowElementFinishList();
 };
@@ -157,6 +167,6 @@ public:
 	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 public:
  	UPROPERTY(SaveGame)
- 	TSoftObjectPtr<class UXD_EventFlowSequenceBase> NextSequenceTemplate;
+ 	UXD_EventFlowSequenceBase* NextSequenceTemplate;
 };
 
