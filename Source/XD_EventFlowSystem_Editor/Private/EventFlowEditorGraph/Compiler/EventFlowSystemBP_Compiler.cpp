@@ -46,8 +46,10 @@ void FEventFlowSystemBP_Compiler::CreateClassVariablesFromBlueprint()
 
 	for (UEdGraphNode* EdNode : Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph)->GetAllNodes())
 	{
+		UBlueprint::ForceLoad(EdNode);
 		if (UEventFlowGraphNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(EdNode)->EventFlowBpNode)
 		{
+			UBlueprint::ForceLoad(Node);
 			if (Node->bIsVariable)
 			{
 				UProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));

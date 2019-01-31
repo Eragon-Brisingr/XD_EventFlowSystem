@@ -40,7 +40,7 @@ void UXD_EventFlowElementBase::GetLifetimeReplicatedProps(TArray<class FLifetime
 
 FString UXD_EventFlowElementBase::GetVarRefName() const
 {
-	return FString::Printf(TEXT("Ref_%s_%s"), *GetOuter()->GetName(), *GetName());
+	return FString::Printf(TEXT("Ref_%s_%s"), *OwingEventFlowSequence->GetName(), *GetName());
 }
 
 FText UXD_EventFlowElementBase::GetDescribe()

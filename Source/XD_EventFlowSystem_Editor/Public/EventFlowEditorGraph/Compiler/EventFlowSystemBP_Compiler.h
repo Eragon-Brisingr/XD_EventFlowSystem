@@ -29,7 +29,7 @@ public:
 
 protected:
 	static bool IsBindingValid(const FEventFlowDelegateEditorBinding& Binding, UClass* Class, class UEventFlowGraphBlueprint* Blueprint, FCompilerResultsLog& MessageLog);
-	static bool DoesBindingTargetExist(const FEventFlowDelegateEditorBinding& Binding, class UEventFlowGraphBlueprint* Blueprint);;
+	static bool DoesBindingTargetExist(const FEventFlowDelegateEditorBinding& Binding, class UEventFlowGraphBlueprint* Blueprint);
 
 	UEventFlowGraphBlueprint* GetGraphBlueprint() const;
 };

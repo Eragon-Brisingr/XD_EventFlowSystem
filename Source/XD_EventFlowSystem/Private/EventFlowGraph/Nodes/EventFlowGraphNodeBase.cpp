@@ -1,6 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "EventFlowGraphNodeBase.h"
 #include "XD_ObjectFunctionLibrary.h"
+#include "XD_EventFlowBase.h"
+#include "EventFlowGraphBlueprintGeneratedClass.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -26,6 +28,29 @@ UEventFlowGraphNodeBase* UEventFlowGraphNodeBase::GetDuplicatedNode(UObject* Out
 FString UEventFlowGraphNodeBase::GetVarRefName() const
 {
 	return FString::Printf(TEXT("Ref_%s"), *GetName());
+}
+
+void UEventFlowGraphNodeBase::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow, bool ForceTry)
+{
+	if (UEventFlowGraphBlueprintGeneratedClass* GeneratedClass = Cast<UEventFlowGraphBlueprintGeneratedClass>(EventFlow->GetClass()))
+	{
+		if (ForceTry || bIsVariable)
+		{
+			FString VarRefName = GetVarRefName();
+			UProperty* RefProperty = EventFlow->GetClass()->FindPropertyByName(*VarRefName);
+			*RefProperty->ContainerPtrToValuePtr<UObject*>(EventFlow) = this;
+
+			for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
+			{
+				UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
+				if (Binding.ObjectName == GetVarRefName())
+				{
+					FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(this);
+					ScriptDelegate->BindUFunction(EventFlow, Binding.FunctionName);
+				}
+			}
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

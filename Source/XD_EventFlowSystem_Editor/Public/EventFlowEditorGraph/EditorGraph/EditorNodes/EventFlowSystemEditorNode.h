@@ -17,6 +17,7 @@ class UEventSequenceEdNodeBase;
 class FCompilerResultsLog;
 class UEventSequenceBranch_SelectionEdNode;
 class UEventFlowGraphBlueprintGeneratedClass;
+class UEventFlowSystemEditorGraph;
 
 /**
  * 
@@ -143,6 +144,9 @@ public:
 	UPROPERTY()
 	UEventSequenceEdNodeBase* ParentNode;
 
+	UPROPERTY()
+	UEventFlowSystemEditorGraph* OwingGraph;
+
 	void DestroyNode() override;
 };
 
@@ -159,6 +163,8 @@ public:
 	virtual UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
 
 	static TSubclassOf<UEventSequenceEdNodeBase> GetEdNodeClassByRuntimeClass(const TSubclassOf<UXD_EventFlowSequenceBase>& RunTimeSequence);
+
+	void DestroyNode() override;
 public:
 	UPROPERTY()
 	TArray<UEventElementEdNode*> EventElements;

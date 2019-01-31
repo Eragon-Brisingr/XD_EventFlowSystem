@@ -22,7 +22,10 @@ class UEventFlowSystemEditorGraph : public UEdGraph
 	GENERATED_BODY()
 	
 public:
-	virtual void RefreshNodes();
+	void BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const;
+
+public:
+	void RefreshNodes();
 
 	UXD_EventFlowSequenceBase* BuildSequenceTreeInstance(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
 

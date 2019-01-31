@@ -44,12 +44,17 @@ void UXD_EventFlowSequenceBase::ReplicatedEventFlowElement(bool& WroteSomething,
 UEventFlowGraphNodeBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject* Outer) const
 {
 	UXD_EventFlowSequenceBase* Sequence = (UXD_EventFlowSequenceBase*)Super::GetDuplicatedNode(Outer);
+	Sequence->OwingEventFlow = Cast<UXD_EventFlowBase>(Outer);
 	Sequence->OnRep_EventFlowElementList();
 	return Sequence;
 }
 
 void UXD_EventFlowSequenceBase::ActiveEventFlowSequence()
 {
+#if WITH_EDITOR
+	check(bIsSequenceActived == false);
+	bIsSequenceActived = true;
+#endif
 	EventFlowSystem_Display_Log("%s激活[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
 	{
@@ -61,6 +66,10 @@ void UXD_EventFlowSequenceBase::ActiveEventFlowSequence()
 
 void UXD_EventFlowSequenceBase::DeactiveEventFlowSequence()
 {
+#if WITH_EDITOR
+	check(bIsSequenceActived);
+	bIsSequenceActived = false;
+#endif
 	EventFlowSystem_Display_Log("%s停止激活[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
 	{
@@ -77,6 +86,7 @@ void UXD_EventFlowSequenceBase::InitEventFlowSequence()
 
 void UXD_EventFlowSequenceBase::FinishEventFlowSequence()
 {
+	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	OnSequenceFinished.Broadcast(this);
 }
 
@@ -103,6 +113,18 @@ void UXD_EventFlowSequenceBase::WhenDeactiveEventFlowSequence()
 }
 
 void UXD_EventFlowSequenceBase::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+{
+#if WITH_EDITOR
+	if (ensure(bIsSequenceActived) == false)
+	{
+		EventFlowSystem_Error_Log("任务元素%s触发了已经结束的序列%s，任务元素反激活的代码存在问题", *UXD_DebugFunctionLibrary::GetDebugName(EventFlowElement->GetClass()), *UXD_DebugFunctionLibrary::GetDebugName(this));
+		return;
+	}
+#endif
+	WhenInvokeFinishEventFlowSequence(EventFlowElement, NextBranchTag);
+}
+
+void UXD_EventFlowSequenceBase::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
 {
 	unimplemented();
 }
@@ -150,13 +172,16 @@ FText UXD_EventFlowSequenceBase::GetDescribe() const
 
 void UXD_EventFlowSequenceBase::OnRep_EventFlowElementList()
 {
-	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
+	for (UXD_EventFlowElementBase* AddedEventFlowElement : TSet<UXD_EventFlowElementBase*>(EventFlowElementList).Difference(TSet<UXD_EventFlowElementBase*>(PreEventFlowElementList)))
 	{
-		if (EventFlowElement)
+		if (AddedEventFlowElement)
 		{
-			EventFlowElement->OwingEventFlowSequence = this;
+			AddedEventFlowElement->OwingEventFlowSequence = this;
+			AddedEventFlowElement->TryBindRefAndDelegate(OwingEventFlow, OwingEventFlow->EventFlowOwner == nullptr || OwingEventFlow->GetEventFlowOwnerController()->Role != ENetRole::ROLE_Authority);
 		}
 	}
+
+	PreEventFlowElementList = EventFlowElementList;
 }
 
 class APawn* UXD_EventFlowSequenceBase::GetEventFlowOwnerCharacter() const
@@ -208,7 +233,7 @@ void UEventFlowSequence_Branch::WhenDeactiveEventFlowSequence()
 	DeactiveFinishBranchs();
 }
 
-void UEventFlowSequence_Branch::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
 {
 	//激活结束游戏事件的关键游戏事件
 	if (EventFlowElementList.Contains(EventFlowElement))
@@ -317,7 +342,7 @@ void UEventFlowSequence_Branch::OnRep_EventFlowElementFinishList()
 	}
 }
 
-void UEventFlowSequence_List::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
 {
 	if (IsEveryMustEventFlowElementFinished())
 	{

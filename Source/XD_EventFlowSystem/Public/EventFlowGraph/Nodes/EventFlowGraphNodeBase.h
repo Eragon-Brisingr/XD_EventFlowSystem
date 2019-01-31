@@ -5,6 +5,8 @@
 #include "UObject/NoExportTypes.h"
 #include "EventFlowGraphNodeBase.generated.h"
 
+class UXD_EventFlowBase;
+
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
 /**
@@ -24,10 +26,12 @@ public:
 
 	virtual UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const;
 public:
-	UPROPERTY()
+	UPROPERTY(SaveGame)
 	uint8 bIsVariable : 1;
 
 	virtual FString GetVarRefName() const;
+
+	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow, bool ForceTry);
 };
 
 #undef LOCTEXT_NAMESPACE

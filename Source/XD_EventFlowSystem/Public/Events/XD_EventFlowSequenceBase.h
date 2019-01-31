@@ -39,13 +39,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏性|游戏事件")
 	FText GetDescribe() const;
 
-	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
-	uint8 bIsFinishListActive : 1;
-
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
 	TArray<UXD_EventFlowElementBase*> EventFlowElementList;
 	UFUNCTION()
 	void OnRep_EventFlowElementList();
+	UPROPERTY()
+	TArray<UXD_EventFlowElementBase*> PreEventFlowElementList;
 
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
 	class UXD_EventFlowBase* OwingEventFlow;
@@ -59,8 +58,12 @@ public:
 
 	bool HasMustEventFlowElement();
 
+#if WITH_EDITORONLY_DATA
+	uint8 bIsSequenceActived : 1;
+#endif
+	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
 	//任务元素向任务序列申请完成该序列，是否完成交由该任务序列判断
-	virtual void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
+	virtual void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
 
 	//当游戏事件元素从完成变为未完成 e.g.需收集的道具开始达到要求，之后被减少了
 	virtual void WhenEventFlowElementReactive(){}
@@ -117,13 +120,17 @@ public:
 
 	void ReplicatedEventFlowElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags);
 
+public:
+	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件")
+	uint8 bIsFinishListActive : 1;
+
 	void ReinitEventFlowSequence() override;
 
 	void WhenActiveEventFlowSequence() override;
 
 	void WhenDeactiveEventFlowSequence() override;
 
-	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
+	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 
 	void WhenEventFlowElementReactive() override;
 
@@ -147,7 +154,7 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowSequence_List : public UXD_EventFlowSeque
 {
 	GENERATED_BODY()
 public:
-	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
+	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 public:
  	UPROPERTY(SaveGame)
  	TSoftObjectPtr<class UXD_EventFlowSequenceBase> NextSequenceTemplate;

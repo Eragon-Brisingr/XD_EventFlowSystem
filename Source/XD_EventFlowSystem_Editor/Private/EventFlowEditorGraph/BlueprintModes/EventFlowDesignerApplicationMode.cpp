@@ -29,6 +29,7 @@
 #include "SlateApplication.h"
 #include "ScopedTransaction.h"
 #include "EventFlowGraphBlueprint.h"
+#include "BlueprintEditorTabs.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
@@ -926,10 +927,22 @@ FEventFlowDesignerApplicationMode::FEventFlowDesignerApplicationMode(TSharedPtr<
 				->SetSizeCoefficient(0.8f)
 				->Split
 				(
-					FTabManager::NewStack()
-					->SetHideTabWell(true)
-					->SetSizeCoefficient(0.8f)
-					->AddTab(GraphTabId, ETabState::OpenedTab)
+					FTabManager::NewSplitter()
+					->SetOrientation(Orient_Horizontal)
+					->Split
+					(
+						FTabManager::NewStack()
+						->SetHideTabWell(true)
+						->SetSizeCoefficient(0.8f)
+						->AddTab(GraphTabId, ETabState::OpenedTab)
+					)
+					->Split
+					(
+						FTabManager::NewStack()
+						->SetSizeCoefficient(0.20f)
+						->AddTab(FBlueprintEditorTabs::CompilerResultsID, ETabState::OpenedTab)
+						->AddTab(FBlueprintEditorTabs::FindResultsID, ETabState::ClosedTab)
+					)
 				)
 				->Split
 				(
@@ -959,6 +972,7 @@ void FEventFlowDesignerApplicationMode::RegisterTabFactories(TSharedPtr<FTabMana
 
 	BP->RegisterToolbarTab(InTabManager.ToSharedRef());
 	BP->PushTabFactories(TabFactories);
+	BP->PushTabFactories(BlueprintEditorTabFactories);
 }
 
 void FEventFlowDesignerApplicationMode::PreDeactivateMode()
@@ -1064,6 +1078,8 @@ bool FEventFlowDesignerApplicationMode::CanDesignerSelectAllNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandCut()
 {
+	const FScopedTransaction Transaction(FGenericCommands::Get().Cut->GetDescription());
+
 	OnDesignerCommandCopy();
 
 	const FGraphPanelSelectionSet OldSelectedNodes = GetDesignerGraphEditor()->GetSelectedNodes();
@@ -1142,6 +1158,8 @@ bool FEventFlowDesignerApplicationMode::CanDesignerCopyNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandPaste()
 {
+	const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
+
 	const FVector2D PasteLocation = GetDesignerGraphEditor()->GetPasteLocation();
 
 	UEdGraph* EdGraph = GetDesignerGraphEditor()->GetCurrentGraph();
@@ -1204,6 +1222,8 @@ void FEventFlowDesignerApplicationMode::OnDesignerCommandDuplicate()
 
 bool FEventFlowDesignerApplicationMode::CanDesignerDuplicateNodes()
 {
+	const FScopedTransaction Transaction(FGenericCommands::Get().Duplicate->GetDescription());
+
 	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
 	if (SelectedNodes.Num() == 1)
 	{
@@ -1217,6 +1237,8 @@ bool FEventFlowDesignerApplicationMode::CanDesignerDuplicateNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandDelete()
 {
+	const FScopedTransaction Transaction(FGenericCommands::Get().Delete->GetDescription());
+
 	GetDesignerGraphEditor()->GetCurrentGraph()->Modify();
 
 	const FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();

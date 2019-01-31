@@ -178,13 +178,11 @@ UEdGraphNode* FNewElement_SchemaAction::PerformAction(class UEdGraph* ParentGrap
 {
 	if (SequenceNode)
 	{
-// 		FGraphNodeCreator<UEventElementEdNode> Creator(*ParentGraph);
-// 		UEventElementEdNode* NewElementEdNode = Creator.CreateNode();
-// 		NewElementEdNode->EventFlowBpNode = NewObject<UXD_EventFlowElementBase>(SequenceNode, NewElementClass, NAME_None, RF_Transactional);
-// 		Creator.Finalize();
-
 		UEventElementEdNode* NewElementEdNode = NewObject<UEventElementEdNode>(ParentGraph, NAME_None, RF_Transactional);
-		NewElementEdNode->EventFlowBpNode = NewObject<UXD_EventFlowElementBase>(SequenceNode, NewElementClass, NAME_None, RF_Transactional);
+		NewElementEdNode->OwingGraph = Cast<UEventFlowSystemEditorGraph>(ParentGraph);
+		UXD_EventFlowElementBase* Element = NewObject<UXD_EventFlowElementBase>(SequenceNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
+		Element->OwingEventFlowSequence = Cast<UXD_EventFlowSequenceBase>(SequenceNode->EventFlowBpNode);
+		NewElementEdNode->EventFlowBpNode = Element;
 		NewElementEdNode->CreateNewGuid();
 		NewElementEdNode->PostPlacedNewNode();
 		NewElementEdNode->AllocateDefaultPins();
@@ -202,7 +200,7 @@ UEdGraphNode* FNewBranch_SchemaAction::PerformAction(class UEdGraph* ParentGraph
 
 	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
 
-	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(SequenceEdNode, NewElementClass, NAME_None, RF_Transactional);
+	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(SequenceEdNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
 	FGraphNodeCreator<UEventSequenceBranch_SelectionEdNode> Creator(*ParentGraph);
 	UEventSequenceBranch_SelectionEdNode* EditorNode = Creator.CreateNode(bSelectNewNode);
 	EditorNode->EventFlowBpNode = AssetNode;
@@ -274,6 +272,10 @@ void UEventElementEdNode::DestroyNode()
 	if (ParentNode)
 	{
 		ParentNode->RemoveElement(this);
+	}
+	if (OwingGraph)
+	{
+		OwingGraph->EventElements.Remove(this);
 	}
 	UEventFlowSystemEditorNodeBase::DestroyNode();
 }
@@ -349,13 +351,26 @@ TSubclassOf<UEventSequenceEdNodeBase> UEventSequenceEdNodeBase::GetEdNodeClassBy
 	return SequenceEdNodeMap[RunTimeSequence];
 }
 
+void UEventSequenceEdNodeBase::DestroyNode()
+{
+	Super::DestroyNode();
+
+	for (UEventElementEdNode* Element : EventElements)
+	{
+		if (Element)
+		{
+			Element->DestroyNode();
+		}
+	}
+}
+
 UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
 {
 	if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Super::BuildSequenceTree(Outer, MessageLog)))
 	{
 		if (EventElements.Num() == 0)
 		{
-			MessageLog.Error(TEXT("@@ 至少需要存在一个任务元素"), List);
+			MessageLog.Error(TEXT("@@ 至少需要存在一个任务元素"), this);
 		}
 		for (UEventSequenceEdNodeBase* NextSequenceEdNode : GetChildNodes<UEventSequenceEdNodeBase>())
 		{
@@ -409,7 +424,7 @@ UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTree(UEventF
 		TArray<UEventSequenceBranch_SelectionEdNode*> Branch_SelectionEdNodes = GetChildNodes<UEventSequenceBranch_SelectionEdNode>();
 		if (Branch_SelectionEdNodes.Num() < 2)
 		{
-			MessageLog.Error(TEXT("@@ 分支数量必须大于等于2"), Branch);
+			MessageLog.Error(TEXT("@@ 分支数量必须大于等于2"), this);
 		}
 		for (UEventSequenceBranch_SelectionEdNode* BranchEdNode : Branch_SelectionEdNodes)
 		{

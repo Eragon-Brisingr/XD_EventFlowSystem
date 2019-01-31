@@ -89,22 +89,7 @@ void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 			if (AddedEventFlowSequence)
 			{
 				AddedEventFlowSequence->OwingEventFlow = this;
-
-				if (AddedEventFlowSequence->bIsVariable)
-				{
-					UProperty* RefProperty = GetClass()->FindPropertyByName(*AddedEventFlowSequence->GetVarRefName());
-					*RefProperty->ContainerPtrToValuePtr<UObject*>(this) = AddedEventFlowSequence;
-
-					for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
-					{
-						UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(AddedEventFlowSequence->GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
-						if (Binding.ObjectName == AddedEventFlowSequence->GetVarRefName())
-						{
-							FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(AddedEventFlowSequence);
-							ScriptDelegate->BindUFunction(this, Binding.FunctionName);
-						}
-					}
-				}
+				AddedEventFlowSequence->TryBindRefAndDelegate(this, EventFlowOwner == nullptr || EventFlowOwner->GetOwner()->Role != ENetRole::ROLE_Authority);
 			}
 		}
 
@@ -122,7 +107,6 @@ void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 void UXD_EventFlowBase::SetAndActiveNextEventFlowSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence)
 {
 	UXD_EventFlowSequenceBase* FinishEventFlowSequence = GetUnderwayEventFlowSequence();
-	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(FinishEventFlowSequence));
 	if (NextEventFlowSequence)
 	{
 		FinishEventFlowSequence->DeactiveEventFlowSequence();
