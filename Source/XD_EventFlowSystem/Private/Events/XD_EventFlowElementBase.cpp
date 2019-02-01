@@ -93,6 +93,15 @@ void UXD_EventFlowElementBase::FinishEventFlowElement(const FName& NextBranchTag
 	}
 }
 
+void UXD_EventFlowElementBase::FinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
+{
+	if (bIsFinished)
+	{
+		WhenFinishEventFlowElement(GetOwningCharacter(), GetOwingController());
+		OnElementFinished.Broadcast(this);
+	}
+}
+
 void UXD_EventFlowElementBase::SetReactive()
 {
 	if (bIsFinished == true)
@@ -113,19 +122,17 @@ void UXD_EventFlowElementBase::ActivateEventFlowElement()
 #endif
 	EventFlowSystem_Display_Log("%s激活[%s]游戏事件序列%s中的%s", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	WhenActivateEventFlowElement(GetOwningCharacter(), GetOwingController());
+	OnElementActived.Broadcast(this);
 }
 
-void UXD_EventFlowElementBase::UnactiveEventFlowElement()
+void UXD_EventFlowElementBase::DeactiveEventFlowElement()
 {
 #if WITH_EDITOR
 	check(bIsActive);
 	bIsActive = false;
 #endif
 	WhenDeactiveEventFlowElement(GetOwningCharacter(), GetOwingController());
-	if (bIsFinished)
-	{
-		WhenFinishEventFlowElement(GetOwningCharacter(), GetOwingController());
-	}
+	OnElementDeactived.Broadcast(this);
 }
 
 class AController* UXD_EventFlowElementBase::GetOwingController() const

@@ -131,7 +131,6 @@ void UEventFlowSystemEditorNodeBase::AutowireNewNode(UEdGraphPin * FromPin)
 	}
 }
 
-
 void UEventFlowSystemEditorNodeBase::GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const
 {
 	FMenuBuilder* MenuBuilder = Context.MenuBuilder;
@@ -168,7 +167,6 @@ void UEventFlowSystemEditorNodeBase::PostCopyNode()
 	}
 }
 
-
 FText UEventFlowSystemStartEdNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	return LOCTEXT("事件开始", "事件开始");
@@ -178,39 +176,46 @@ UEdGraphNode* FNewElement_SchemaAction::PerformAction(class UEdGraph* ParentGrap
 {
 	if (SequenceNode)
 	{
-		UEventElementEdNode* NewElementEdNode = NewObject<UEventElementEdNode>(ParentGraph, NAME_None, RF_Transactional);
-		NewElementEdNode->OwingGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
-		UXD_EventFlowElementBase* Element = NewObject<UXD_EventFlowElementBase>(SequenceNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
-		Element->OwingEventFlowSequence = CastChecked<UXD_EventFlowSequenceBase>(SequenceNode->EventFlowBpNode);
-		NewElementEdNode->EventFlowBpNode = Element;
-		NewElementEdNode->CreateNewGuid();
-		NewElementEdNode->PostPlacedNewNode();
-		NewElementEdNode->AllocateDefaultPins();
+		ParentGraph->Modify();
 
- 		SequenceNode->AddElement(NewElementEdNode);
+		if (UXD_EventFlowSequenceBase* Sequence = Cast<UXD_EventFlowSequenceBase>(SequenceNode->EventFlowBpNode))
+		{
+			UEventElementEdNode* NewElementEdNode = NewObject<UEventElementEdNode>(ParentGraph, NAME_None, RF_Transactional);
+			NewElementEdNode->OwingGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
+			UXD_EventFlowElementBase* Element = NewObject<UXD_EventFlowElementBase>(Sequence, NewElementClass, NAME_None, RF_Transactional);
+			Element->OwingEventFlowSequence = Sequence;
+			NewElementEdNode->EventFlowBpNode = Element;
+			NewElementEdNode->CreateNewGuid();
+			NewElementEdNode->PostPlacedNewNode();
+			NewElementEdNode->AllocateDefaultPins();
+
+			SequenceNode->AddElement(NewElementEdNode);
+		}
 	}
 	return nullptr;
 }
 
 UEdGraphNode* FNewBranch_SchemaAction::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode /*= true*/)
 {
-	check(ParentGraph);
+	if (UXD_EventFlowSequenceBase* Sequence = Cast<UXD_EventFlowSequenceBase>(SequenceEdNode->EventFlowBpNode))
+	{
+		ParentGraph->Modify();
 
-	ParentGraph->Modify();
+		UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
+		UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(Sequence, NewElementClass, NAME_None, RF_Transactional);
+		AssetNode->OwingEventFlowSequence = Sequence;
+		FGraphNodeCreator<UEventSequenceBranch_SelectionEdNode> Creator(*ParentGraph);
+		UEventSequenceBranch_SelectionEdNode* EditorNode = Creator.CreateNode(bSelectNewNode);
+		EditorNode->EventFlowBpNode = AssetNode;
+		Creator.Finalize();
 
-	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(ParentGraph);
-	UXD_EventFlowElementBase* AssetNode = NewObject<UXD_EventFlowElementBase>(SequenceEdNode->EventFlowBpNode, NewElementClass, NAME_None, RF_Transactional);
-	AssetNode->OwingEventFlowSequence = CastChecked<UXD_EventFlowSequenceBase>(SequenceEdNode->EventFlowBpNode);
-	FGraphNodeCreator<UEventSequenceBranch_SelectionEdNode> Creator(*ParentGraph);
-	UEventSequenceBranch_SelectionEdNode* EditorNode = Creator.CreateNode(bSelectNewNode);
-	EditorNode->EventFlowBpNode = AssetNode;
-	Creator.Finalize();
+		EditorNode->AutowireNewNode(FromPin);
+		EditorNode->NodePosX = Location.X;
+		EditorNode->NodePosY = Location.Y;
 
-	EditorNode->AutowireNewNode(FromPin);
-	EditorNode->NodePosX = Location.X;
-	EditorNode->NodePosY = Location.Y;
-
-	return EditorNode;
+		return EditorNode;
+	}
+	return nullptr;
 }
 
 void UEventSequenceEdNodeBase::GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const
@@ -295,7 +300,7 @@ void UEventSequenceEdNodeBase::AddElement(UEventElementEdNode* Element)
 
 	EventElements.Add(Element);
 
-	Cast<UEventFlowSystemEditorGraph>(GetGraph())->EventElements.Add(Element);
+	CastChecked<UEventFlowSystemEditorGraph>(GetGraph())->EventElements.Add(Element);
 
 	GetGraph()->NotifyGraphChanged();
 }
@@ -355,7 +360,7 @@ void UEventSequenceEdNodeBase::DestroyNode()
 {
 	Super::DestroyNode();
 
-	for (UEventElementEdNode* Element : EventElements)
+	for (UEventElementEdNode* Element : TArray<UEventElementEdNode*>(EventElements))
 	{
 		if (Element)
 		{

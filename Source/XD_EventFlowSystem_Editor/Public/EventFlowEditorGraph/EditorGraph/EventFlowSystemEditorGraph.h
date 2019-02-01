@@ -32,7 +32,7 @@ public:
 	UPROPERTY()
 	UEventFlowSystemStartEdNode* StartNode;
 
-	//必须将元素在这边记录下，否则编辑器启动读取时有问题
+	//记录任务元素
 	UPROPERTY()
 	TArray<class UEventElementEdNode*> EventElements;
 

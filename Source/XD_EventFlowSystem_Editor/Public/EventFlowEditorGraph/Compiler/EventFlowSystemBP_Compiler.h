@@ -22,6 +22,7 @@ public:
 	~FEventFlowSystemBP_Compiler() override;
 
 	// FKismetCompilerContext
+	void PreCompile() override;
 	void SpawnNewClass(const FString& NewClassName) override;
 	void CreateClassVariablesFromBlueprint() override;
 	void FinishCompilingClass(UClass* Class) override;

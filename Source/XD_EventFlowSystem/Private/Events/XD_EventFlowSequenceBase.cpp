@@ -116,7 +116,7 @@ void UXD_EventFlowSequenceBase::DeactiveEventFlowSequence()
 	EventFlowSystem_Display_Log("%s停止激活[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	for (UXD_EventFlowElementBase* EventFlowElement : EventFlowElementList)
 	{
-		EventFlowElement->UnactiveEventFlowElement();
+		EventFlowElement->DeactiveEventFlowElement();
 	}
 	WhenDeactiveEventFlowSequence();
 	OnSequenceDeactived.Broadcast(this);
@@ -392,7 +392,7 @@ void UEventFlowSequence_Branch::DeactiveFinishBranchs()
 	bIsFinishListActive = false;
 	for (FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper : EventFlowElementFinishList)
 	{
-		EventFlowElementFinishWarpper.EventFlowElement->UnactiveEventFlowElement();
+		EventFlowElementFinishWarpper.EventFlowElement->DeactiveEventFlowElement();
 	}
 }
 

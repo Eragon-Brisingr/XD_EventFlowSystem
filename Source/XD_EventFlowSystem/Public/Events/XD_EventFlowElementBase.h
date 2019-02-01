@@ -35,7 +35,6 @@ public:
 
 	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow);
 private:
-
 	UPROPERTY(SaveGame, Replicated)
 	uint8 bIsFinished : 1;
 public:
@@ -71,7 +70,7 @@ public:
 
 	/**
 	* 完成该任务序列
-	* @param	Index		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用Index区分
+	* @param	NextBranchTag		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用NextBranchTag区分
 	*/
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件", meta = (AdvancedDisplay = "0"))
 	void FinishEventFlowElement(const FName& NextBranchTag = NAME_None);
@@ -83,19 +82,19 @@ public:
 #if WITH_EDITORONLY_DATA
 	uint8 bIsActive : 1;
 #endif
-
 	void ActivateEventFlowElement();
 	//用于激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
 	void WhenActivateEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 	virtual void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
-	void UnactiveEventFlowElement();
+	void DeactiveEventFlowElement();
 	//用于反激活该游戏事件元素的检查事件
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
 	void WhenDeactiveEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 	virtual void WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 
+	void FinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 	//游戏事件完成后调用
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "角色|游戏事件")
 	void WhenFinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
@@ -110,6 +109,19 @@ public:
 	class APawn* GetOwningCharacter() const;
 	UFUNCTION(BlueprintPure, Category = "角色|游戏事件")
 	class UXD_EventFlowBase* GetEventFlow() const;
+
+public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementActived, UXD_EventFlowElementBase*, Element);
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "元素激活"))
+	FOnElementActived OnElementActived;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementDeactived, UXD_EventFlowElementBase*, Element);
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "元素反激活"))
+	FOnElementDeactived OnElementDeactived;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementFinished, UXD_EventFlowElementBase*, Element);
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "元素结束"))
+	FOnElementFinished OnElementFinished;
 };
 
 UCLASS(meta = (DisplayName = "测试"))

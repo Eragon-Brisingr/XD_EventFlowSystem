@@ -88,20 +88,20 @@ protected:
 
 	virtual void WhenDeactiveEventFlowSequence();
 public:
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceInited, UXD_EventFlowSequenceBase*, Sequence);
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "序列初始化"))
+	FOnSequenceInited OnSequenceInited;
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceActived, UXD_EventFlowSequenceBase*, Sequence);
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "序列激活"))
 	FOnSequenceActived OnSequenceActived;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceDeactived, UXD_EventFlowSequenceBase*, Sequence);
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "序列反激活"))
 	FOnSequenceDeactived OnSequenceDeactived;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceInited, UXD_EventFlowSequenceBase*, Sequence);
-	UPROPERTY(BlueprintAssignable)
-	FOnSequenceInited OnSequenceInited;
-
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSequenceFinished, UXD_EventFlowSequenceBase*, Sequence);
-	UPROPERTY(BlueprintAssignable)
+	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "序列结束"))
 	FOnSequenceFinished OnSequenceFinished;
 };
 

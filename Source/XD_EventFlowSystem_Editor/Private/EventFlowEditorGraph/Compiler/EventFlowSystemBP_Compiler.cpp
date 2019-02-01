@@ -22,6 +22,17 @@ FEventFlowSystemBP_Compiler::~FEventFlowSystemBP_Compiler()
 {
 }
 
+void FEventFlowSystemBP_Compiler::PreCompile()
+{
+	Super::PreCompile();
+
+	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetGraphBlueprint();
+	for (UEdGraphNode* EdNode : Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph)->GetAllNodes())
+	{
+		EdNode->ClearCompilerMessage();
+	}
+}
+
 void FEventFlowSystemBP_Compiler::SpawnNewClass(const FString& NewClassName)
 {
 	NewClass = FindObject<UEventFlowGraphBlueprintGeneratedClass>(Blueprint->GetOutermost(), *NewClassName);
