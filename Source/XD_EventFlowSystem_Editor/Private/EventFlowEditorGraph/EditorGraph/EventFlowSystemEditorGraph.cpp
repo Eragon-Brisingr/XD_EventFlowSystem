@@ -85,9 +85,9 @@ UEventFlowGraphBlueprint* UEventFlowSystemEditorGraph::GetBlueprint() const
 	return CastChecked<UEventFlowGraphBlueprint>(GetOuter());
 }
 
-TArray<class UEventFlowSystemEditorNodeBase*> UEventFlowSystemEditorGraph::GetAllNodes() const
+TArray<UEventFlowSystemEditorNodeBase*> UEventFlowSystemEditorGraph::GetAllNodes() const
 {
-	TArray<class UEventFlowSystemEditorNodeBase*> Res;
+	TArray<UEventFlowSystemEditorNodeBase*> Res;
 	for (UEdGraphNode* Node : Nodes)
 	{
 		if (UEventFlowSystemEditorNodeBase* EdNode = Cast<UEventFlowSystemEditorNodeBase>(Node))
@@ -96,5 +96,33 @@ TArray<class UEventFlowSystemEditorNodeBase*> UEventFlowSystemEditorGraph::GetAl
 		}
 	}
 	Res.Append(EventElements);
+	return Res;
+}
+
+TArray<UEventFlowSystemEditorNodeBase*> UEventFlowSystemEditorGraph::GetAllRootLinkedNodes() const
+{
+	struct FLinkedNodeCollector
+	{
+		static void Collect(UEventFlowSystemEditorNodeBase* Root, TArray<UEventFlowSystemEditorNodeBase*>& Res)
+		{
+			TArray<UEventFlowSystemEditorNodeBase*> Childs = Root->GetChildNodes<UEventFlowSystemEditorNodeBase>();
+			Res.Append(Childs);
+			for (UEventFlowSystemEditorNodeBase* Child : Childs)
+			{
+				Collect(Child, Res);
+			}
+		}
+	};
+
+	TArray<UEventFlowSystemEditorNodeBase*> Res;
+	FLinkedNodeCollector::Collect(StartNode, Res);
+
+	for (UEventElementEdNode* Element : EventElements)
+	{
+		if (Res.Contains(Element->ParentNode))
+		{
+			Res.Add(Element);
+		}
+	}
 	return Res;
 }

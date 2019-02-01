@@ -16,6 +16,7 @@
 #include "SGraphEditorActionMenuBase.h"
 #include "CompilerResultsLog.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
+#include "EventFlowSystem_EditorStyle.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -71,6 +72,11 @@ bool UEventFlowSystemEditorNodeBase::HasOutputPins()
 bool UEventFlowSystemEditorNodeBase::HasInputPins()
 {
 	return true;
+}
+
+FSlateColor UEventFlowSystemEditorNodeBase::GetNodeColor() const
+{
+	return FLinearColor(0.1f, 0.1f, 0.4f);
 }
 
 void UEventFlowSystemEditorNodeBase::AllocateDefaultPins()
@@ -170,6 +176,11 @@ void UEventFlowSystemEditorNodeBase::PostCopyNode()
 FText UEventFlowSystemStartEdNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	return LOCTEXT("事件开始", "事件开始");
+}
+
+FSlateColor UEventFlowSystemStartEdNode::GetNodeColor() const
+{
+	return EventFlowSystem_EditorStyle::NodeBody::Start;;
 }
 
 UEdGraphNode* FNewElement_SchemaAction::PerformAction(class UEdGraph* ParentGraph, UEdGraphPin* FromPin, const FVector2D Location, bool bSelectNewNode /*= true*/)
@@ -285,6 +296,11 @@ void UEventElementEdNode::DestroyNode()
 	UEventFlowSystemEditorNodeBase::DestroyNode();
 }
 
+FSlateColor UEventElementEdNode::GetNodeColor() const
+{
+	return EventFlowSystem_EditorStyle::NodeBody::Element;
+}
+
 void UEventSequenceEdNodeBase::AddElement(UEventElementEdNode* Element)
 {
 	GetGraph()->Modify();
@@ -369,6 +385,11 @@ void UEventSequenceEdNodeBase::DestroyNode()
 	}
 }
 
+FSlateColor UEventSequenceEdNodeBase::GetNodeColor() const
+{
+	return EventFlowSystem_EditorStyle::NodeBody::Sequence;
+}
+
 UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
 {
 	if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Super::BuildSequenceTree(Outer, MessageLog)))
@@ -445,6 +466,11 @@ UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTree(UEventF
 		return Branch;
 	}
 	return nullptr;
+}
+
+FSlateColor UEventSequenceBranch_SelectionEdNode::GetNodeColor() const
+{
+	return EventFlowSystem_EditorStyle::NodeBody::BranchElement;
 }
 
 FPinConnectionResponse UEventSequenceBranch_SelectionEdNode::CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const

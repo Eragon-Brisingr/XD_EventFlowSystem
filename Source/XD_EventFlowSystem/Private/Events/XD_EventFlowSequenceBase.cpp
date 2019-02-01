@@ -61,7 +61,7 @@ UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject*
 	Sequence->SequenceTemplate = this;
 	for (int32 Idx = 0; Idx < EventFlowElementList.Num(); ++Idx)
 	{
-		Sequence->EventFlowElementList[Idx]->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject);
+		Sequence->EventFlowElementList[Idx]->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded);
 		Sequence->EventFlowElementList[Idx]->ElementTemplate = EventFlowElementList[Idx];
 	}
 	Sequence->OnRep_EventFlowElementList();
@@ -345,7 +345,7 @@ UEventFlowSequence_Branch* UEventFlowSequence_Branch::GetDuplicatedNode(UObject*
 	UEventFlowSequence_Branch* Branch = CastChecked<UEventFlowSequence_Branch>(Super::GetDuplicatedNode(Outer));
 	for (int32 Idx = 0; Idx < EventFlowElementFinishList.Num(); ++Idx)
 	{
-		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject);
+		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded);
 		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ElementTemplate = Branch->EventFlowElementFinishList[Idx].EventFlowElement;
 	}
 	Branch->OnRep_EventFlowElementFinishList();

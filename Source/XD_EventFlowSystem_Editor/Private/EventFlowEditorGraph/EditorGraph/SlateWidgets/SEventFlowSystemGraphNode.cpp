@@ -40,8 +40,8 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 		[
 			SNew(SBorder)
 			.BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
-			.Padding(FMargin(1.f, 5.0f))
-			.BorderBackgroundColor(this, &SEventFlowSystemGraphNode::GetBorderBackgroundColor)
+			.Padding(FMargin(1.f, 1.f))
+			.BorderBackgroundColor(this, &SEventFlowSystemGraphNode::GetNodeSelectedOutlineColor)
 			.OnMouseButtonDown(this, &SEventFlowSystemGraphNode::OnMouseDown)
 			[
 				SNew(SHorizontalBox)
@@ -56,7 +56,7 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 					SNew(SBorder)
                     .BorderImage(FEditorStyle::GetBrush("Graph.StateNode.Body"))
                     .Padding(FMargin(5.0f))
-                    .BorderBackgroundColor(FLinearColor(0.1f, 0.1f, 0.4f))
+                    .BorderBackgroundColor(this, &SEventFlowSystemGraphNode::GetNodeColor)
                     [
 						SNew(SVerticalBox)
 						+ SVerticalBox::Slot()
@@ -65,6 +65,7 @@ void SEventFlowSystemGraphNode::UpdateGraphNode()
 						[
 							SNew(STextBlock)
 							.Text(this, &SEventFlowSystemGraphNode::GetBP_NodeName)
+					.Visibility_Lambda([this]() {return Cast<UEventFlowSystemEditorNodeBase>(GraphNode)->EventFlowBpNode ? EVisibility::Visible : EVisibility::Collapsed; })
 						]
 						+ SVerticalBox::Slot()
 						.HAlign(HAlign_Center)
@@ -234,7 +235,7 @@ void SEventFlowSystemGraphNode::OnNameTextCommited(const FText & InText, ETextCo
 	UEventFlowSystemEditorNodeBase* UEdNode = CastChecked<UEventFlowSystemEditorNodeBase>(GraphNode);
 }
 
-FSlateColor SEventFlowSystemGraphNode::GetBorderBackgroundColor() const
+FSlateColor SEventFlowSystemGraphNode::GetNodeSelectedOutlineColor() const
 {
 	if (UEventElementEdNode* EventElementEdNode = Cast<UEventElementEdNode>(GraphNode))
 	{
@@ -244,6 +245,12 @@ FSlateColor SEventFlowSystemGraphNode::GetBorderBackgroundColor() const
 	{
 		return EventFlowSystem_EditorStyle::NodeBorder::Default;
 	}
+}
+
+FSlateColor SEventFlowSystemGraphNode::GetNodeColor() const
+{
+	UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(GraphNode);
+	return Node->GetNodeColor();
 }
 
 FReply SEventFlowSystemGraphNode::OnMouseDown(const FGeometry& SenderGeometry, const FPointerEvent& MouseEvent)

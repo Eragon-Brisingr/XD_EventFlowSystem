@@ -80,6 +80,8 @@ protected:
 	virtual bool HasInputPins();
 	TSharedPtr<SGraphNode> SlateNode;
 public:
+	virtual FSlateColor GetNodeColor() const;
+
 	UPROPERTY(Instanced)
 	UEventFlowGraphNodeBase* EventFlowBpNode = nullptr;
 };
@@ -95,6 +97,8 @@ public:
 	FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
 
 	bool HasInputPins() override { return false; }
+
+	FSlateColor GetNodeColor() const override;
 };
 
 USTRUCT()
@@ -141,13 +145,15 @@ public:
 	bool HasInputPins() override { return false; }
 	bool HasOutputPins() override { return false; }
 
+	void DestroyNode() override;
+	FSlateColor GetNodeColor() const override;
+
+public:
 	UPROPERTY()
 	UEventSequenceEdNodeBase* ParentNode;
 
 	UPROPERTY()
 	UEventFlowSystemEditorGraph* OwingGraph;
-
-	void DestroyNode() override;
 };
 
 UCLASS(abstract)
@@ -165,6 +171,7 @@ public:
 	static TSubclassOf<UEventSequenceEdNodeBase> GetEdNodeClassByRuntimeClass(const TSubclassOf<UXD_EventFlowSequenceBase>& RunTimeSequence);
 
 	void DestroyNode() override;
+	FSlateColor GetNodeColor() const override;
 public:
 	UPROPERTY()
 	TArray<UEventElementEdNode*> EventElements;
@@ -193,5 +200,6 @@ class UEventSequenceBranch_SelectionEdNode : public UEventFlowSystemEditorNodeBa
 {
 	GENERATED_BODY()
 public:
+	FSlateColor GetNodeColor() const override;
 	FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const override;
 };

@@ -15,6 +15,8 @@ class UEventFlowGraphBlueprint;
 class FCompilerResultsLog;
 class UXD_EventFlowSequenceBase;
 class UEventFlowGraphBlueprintGeneratedClass;
+class UEventElementEdNode;
+class UEventFlowSystemEditorNodeBase;
 
 UCLASS()
 class UEventFlowSystemEditorGraph : public UEdGraph
@@ -34,9 +36,11 @@ public:
 
 	//记录任务元素
 	UPROPERTY()
-	TArray<class UEventElementEdNode*> EventElements;
+	TArray<UEventElementEdNode*> EventElements;
 
 	UEventFlowGraphBlueprint* GetBlueprint() const;
 
-	TArray<class UEventFlowSystemEditorNodeBase*> GetAllNodes() const;
+	TArray<UEventFlowSystemEditorNodeBase*> GetAllNodes() const;
+
+	TArray<UEventFlowSystemEditorNodeBase*> GetAllRootLinkedNodes() const;
 };

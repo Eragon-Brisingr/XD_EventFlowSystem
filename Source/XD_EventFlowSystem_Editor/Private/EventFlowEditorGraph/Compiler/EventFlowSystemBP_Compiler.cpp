@@ -27,9 +27,12 @@ void FEventFlowSystemBP_Compiler::PreCompile()
 	Super::PreCompile();
 
 	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetGraphBlueprint();
-	for (UEdGraphNode* EdNode : Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph)->GetAllNodes())
+	if (UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph))
 	{
-		EdNode->ClearCompilerMessage();
+		for (UEdGraphNode* EdNode : EventFlowSystemEditorGraph->GetAllRootLinkedNodes())
+		{
+			EdNode->ClearCompilerMessage();
+		}
 	}
 }
 
@@ -55,22 +58,25 @@ void FEventFlowSystemBP_Compiler::CreateClassVariablesFromBlueprint()
 
 	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetGraphBlueprint();
 
-	for (UEdGraphNode* EdNode : Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph)->GetAllNodes())
+	if (UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = Cast<UEventFlowSystemEditorGraph>(EditorGraph_Blueprint->EdGraph))
 	{
-		UBlueprint::ForceLoad(EdNode);
-		if (UEventFlowGraphNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(EdNode)->EventFlowBpNode)
+		for (UEdGraphNode* EdNode : EventFlowSystemEditorGraph->GetAllRootLinkedNodes())
 		{
-			UBlueprint::ForceLoad(Node);
-			if (Node->bIsVariable)
+			UBlueprint::ForceLoad(EdNode);
+			if (UEventFlowGraphNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(EdNode)->EventFlowBpNode)
 			{
-				UProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
-				if (NodeProperty)
+				UBlueprint::ForceLoad(Node);
+				if (Node->bIsVariable)
 				{
-					NodeProperty->SetPropertyFlags(CPF_BlueprintVisible);
-					NodeProperty->SetPropertyFlags(CPF_BlueprintReadOnly);
-					NodeProperty->SetPropertyFlags(CPF_Instanced);
-					NodeProperty->SetPropertyFlags(CPF_RepSkip);
-					NodeProperty->SetMetaData(TEXT("Category"), TEXT("设计图表引用"));
+					UProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
+					if (NodeProperty)
+					{
+						NodeProperty->SetPropertyFlags(CPF_BlueprintVisible);
+						NodeProperty->SetPropertyFlags(CPF_BlueprintReadOnly);
+						NodeProperty->SetPropertyFlags(CPF_Instanced);
+						NodeProperty->SetPropertyFlags(CPF_RepSkip);
+						NodeProperty->SetMetaData(TEXT("Category"), TEXT("设计图表引用"));
+					}
 				}
 			}
 		}
@@ -149,7 +155,7 @@ bool FEventFlowSystemBP_Compiler::IsBindingValid(const FEventFlowDelegateEditorB
 bool FEventFlowSystemBP_Compiler::DoesBindingTargetExist(const FEventFlowDelegateEditorBinding& Binding, class UEventFlowGraphBlueprint* Blueprint)
 {
 	UEventFlowSystemEditorGraph* Graph = Cast<UEventFlowSystemEditorGraph>(Blueprint->EdGraph);
-	return Graph->GetAllNodes().ContainsByPredicate([&](const UEventFlowSystemEditorNodeBase* Node) {return Node && Node->EventFlowBpNode && Node->EventFlowBpNode == Binding.Object.Get(); });
+	return Graph->GetAllRootLinkedNodes().ContainsByPredicate([&](const UEventFlowSystemEditorNodeBase* Node) {return Node && Node->EventFlowBpNode && Node->EventFlowBpNode == Binding.Object.Get(); });
 }
 
 #undef LOCTEXT_NAMESPACE
