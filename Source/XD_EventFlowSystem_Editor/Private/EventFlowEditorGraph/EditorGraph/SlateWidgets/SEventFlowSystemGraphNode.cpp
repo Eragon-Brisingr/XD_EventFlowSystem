@@ -10,6 +10,9 @@
 #include "SGraphNode.h"
 #include "SGraphPanel.h"
 #include "EventFlowSystem_EditorStyle.h"
+#include <PropertyEditorModule.h>
+#include <IDetailCustomization.h>
+#include <DetailLayoutBuilder.h>
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -265,10 +268,34 @@ FReply SEventFlowSystemGraphNode::OnMouseDown(const FGeometry& SenderGeometry, c
 
 void SEventFlowSystemGraphNode::CreateContent()
 {
-	UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(GraphNode);
-
-	ContentWidget->SetContent(Node->GetContentWidget().ToSharedRef());
 	ContentWidget->SetMinDesiredWidth(200.f);
+
+	UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(GraphNode);
+	if (UEventFlowGraphNodeBase* EventFlowBpNode = Node->EventFlowBpNode)
+	{
+		FDetailsViewArgs DetailsViewArgs;
+		DetailsViewArgs.bAllowSearch = false;
+		DetailsViewArgs.bLockable = false;
+		DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
+		DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Hide;
+
+		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
+		TSharedRef<IDetailsView> PropertyView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
+		//PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Editor.Pin().Get())));
+		class FEventFlowContentWidgetDetailCustomization : public IDetailCustomization
+		{
+		public:
+			// IDetailCustomization interface
+			virtual void CustomizeDetails(IDetailLayoutBuilder& DetailBuilder) override
+			{
+				DetailBuilder.HideCategory(TEXT("高级"));
+			}
+		};
+		PropertyView->RegisterInstancedCustomPropertyLayout(EventFlowBpNode->GetClass(), FOnGetDetailCustomizationInstance::CreateLambda([] {return MakeShareable(new FEventFlowContentWidgetDetailCustomization); }));
+		PropertyView->SetObject(EventFlowBpNode);
+
+		ContentWidget->SetContent(PropertyView);
+	}
 }
 
 FText SEventFlowSystemGraphNode::GetBP_NodeName() const

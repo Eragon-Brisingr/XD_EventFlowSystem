@@ -70,7 +70,7 @@ public:
 	T* DuplicatedBpNode(UObject* Outer) const
 	{
 		T* InstanceNode = CastChecked<T>(StaticDuplicateObject(EventFlowBpNode, Outer, *EventFlowBpNode->GetName(), RF_Transactional));
-		InstanceNode->SetFlags(RF_ArchetypeObject | RF_DefaultSubObject);
+		InstanceNode->SetFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_Public);
 		return InstanceNode;
 	}
 public:
@@ -78,7 +78,6 @@ public:
 	virtual UEventFlowGraphNodeBase* GetAssetNode();
 	virtual void PostCopyNode();
 
-	virtual TSharedPtr<SWidget> GetContentWidget();
 	virtual void UpdateVisualNode();
 	virtual FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const;
 	virtual void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) {}

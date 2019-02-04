@@ -21,13 +21,16 @@ void FEventFlowSystemEditorConnectionDrawingPolicy::DetermineWiringStyle(UEdGrap
 		ApplyHoverDeemphasis(OutputPin, InputPin, /*inout*/ Params.WireThickness, /*inout*/ Params.WireColor);
 	}
 
-	UEventFlowSystemEditorNodeBase* InEdNode = Cast<UEventFlowSystemEditorNodeBase>(InputPin->GetOwningNode());
-	UEventFlowSystemEditorNodeBase* OutEdNode = Cast<UEventFlowSystemEditorNodeBase>(OutputPin->GetOwningNode());
-	if (InEdNode && OutEdNode)
+	if (InputPin && OutputPin)
 	{
-		if (OutEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None && InEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None)
+		UEventFlowSystemEditorNodeBase* InEdNode = Cast<UEventFlowSystemEditorNodeBase>(InputPin->GetOwningNode());
+		UEventFlowSystemEditorNodeBase* OutEdNode = Cast<UEventFlowSystemEditorNodeBase>(OutputPin->GetOwningNode());
+		if (InEdNode && OutEdNode)
 		{
-			Params.WireColor = FLinearColor::Green;
+			if (OutEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None && InEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None)
+			{
+				Params.WireColor = FLinearColor::Green;
+			}
 		}
 	}
 }

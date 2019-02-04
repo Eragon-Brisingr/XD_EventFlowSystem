@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -29,9 +29,11 @@ public:
 	UPROPERTY()
 	FGuid MemberFunctionGuid;
 
+#if WITH_EDITOR
 	FEventFlowDelegateRuntimeBinding ToRuntimeBinding(UEventFlowGraphBlueprint* Blueprint) const;
 
 	FName GetFunctionName(UEventFlowGraphBlueprint* Blueprint) const;
+#endif
 };
 
 
@@ -42,8 +44,10 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowGraphBlueprint : public UBlueprint
 public:
 	UEventFlowGraphBlueprint();
 
+#if WITH_EDITOR
 	UClass* GetBlueprintClass() const override;
 	void GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const override;
+#endif
 public:
 #if WITH_EDITORONLY_DATA
 	UPROPERTY()

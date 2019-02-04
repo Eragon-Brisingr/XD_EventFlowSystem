@@ -3,8 +3,6 @@
 #include "EventFlowGraphNodeBase.h"
 #include "EventFlowSystemEditorGraph.h"
 #include "SEventFlowSystemGraphNode.h"
-#include "IDetailsView.h"
-#include "PropertyEditorModule.h"
 #include "ModuleManager.h"
 #include "EventFlowSystem_Editor_Log.h"
 #include "GenericCommands.h"
@@ -18,6 +16,7 @@
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "EventFlowSystem_EditorStyle.h"
 #include "XD_EventFlowBase.h"
+#include "SEventFlowPropertyBinding.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -31,20 +30,6 @@ TSharedPtr<SGraphNode> UEventFlowSystemEditorNodeBase::CreateVisualWidget()
 {
 	SlateNode= SNew(SEventFlowSystemGraphNode, this);
 	return SlateNode;
-}
-
-TSharedPtr<SWidget> UEventFlowSystemEditorNodeBase::GetContentWidget()
-{
-	FDetailsViewArgs DetailsViewArgs;
-	DetailsViewArgs.bAllowSearch = false;
-	DetailsViewArgs.bLockable = false;
-	DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Hide;
-
-	FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
-	TSharedPtr<IDetailsView> View = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
-	View->SetObject(EventFlowBpNode);
-	return View;
 }
 
 void UEventFlowSystemEditorNodeBase::UpdateVisualNode()
@@ -342,8 +327,7 @@ UXD_EventFlowSequenceBase* UEventSequenceEdNodeBase::BuildSequenceTree(UEventFlo
 {
 	if (EventFlowBpNode)
 	{
-		UXD_EventFlowSequenceBase** P_Sequence = Outer->SequenceList.FindByPredicate([&](UXD_EventFlowSequenceBase* E) {return E->GetName() == EventFlowBpNode->GetName(); });
-		UXD_EventFlowSequenceBase* Sequence = P_Sequence ? *P_Sequence : nullptr;
+		UXD_EventFlowSequenceBase* Sequence = FindObject<UXD_EventFlowSequenceBase>(Outer, *EventFlowBpNode->GetName());
 		return Sequence ? Sequence : BuildSequenceTreeImpl(Outer, MessageLog);
 	}
 	return nullptr;

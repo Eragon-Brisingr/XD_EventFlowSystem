@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "EventFlowGraphBlueprint.h"
 #include "EventFlowGraphNodeBase.h"
@@ -7,21 +7,7 @@
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
-UEventFlowGraphBlueprint::UEventFlowGraphBlueprint()
-{
-	
-}
-
-UClass* UEventFlowGraphBlueprint::GetBlueprintClass() const
-{
-	return UEventFlowGraphBlueprintGeneratedClass::StaticClass();
-}
-
-void UEventFlowGraphBlueprint::GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const
-{
-	AllowedChildrenOfClasses.Add(UXD_EventFlowBase::StaticClass());
-}
-
+#if WITH_EDITOR
 FEventFlowDelegateRuntimeBinding FEventFlowDelegateEditorBinding::ToRuntimeBinding(UEventFlowGraphBlueprint* Blueprint) const
 {
 	FEventFlowDelegateRuntimeBinding RuntimeBinding;
@@ -35,5 +21,23 @@ FName FEventFlowDelegateEditorBinding::GetFunctionName(UEventFlowGraphBlueprint*
 {
 	return Blueprint->GetFieldNameFromClassByGuid<UFunction>(Blueprint->GeneratedClass, MemberFunctionGuid);
 }
+#endif
+
+UEventFlowGraphBlueprint::UEventFlowGraphBlueprint()
+{
+	
+}
+
+#if WITH_EDITOR
+UClass* UEventFlowGraphBlueprint::GetBlueprintClass() const
+{
+	return UEventFlowGraphBlueprintGeneratedClass::StaticClass();
+}
+
+void UEventFlowGraphBlueprint::GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const
+{
+	AllowedChildrenOfClasses.Add(UXD_EventFlowBase::StaticClass());
+}
+#endif
 
 #undef LOCTEXT_NAMESPACE
