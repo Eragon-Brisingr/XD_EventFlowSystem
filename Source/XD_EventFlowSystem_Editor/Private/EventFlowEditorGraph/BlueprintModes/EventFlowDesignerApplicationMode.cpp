@@ -31,6 +31,7 @@
 #include "EventFlowGraphBlueprint.h"
 #include "BlueprintEditorTabs.h"
 #include "XD_EventFlowElementBase.h"
+#include "EventFlowSystem_Editor_Log.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
@@ -927,7 +928,8 @@ TSharedRef<SWidget> FEventFlowDesignerGraphSummoner::CreateTabBody(const FWorkfl
 }
 
 FEventFlowDesignerApplicationMode::FEventFlowDesignerApplicationMode(TSharedPtr<class FEventFlowSystemEditor> GraphEditorToolkit)
-	:FEventFlowBlueprintApplicationModeBase(GraphEditorToolkit, FBlueprintApplicationModesTemplate::DesignerMode)
+	:FEventFlowBlueprintApplicationModeBase(GraphEditorToolkit, FBlueprintApplicationModesTemplate::DesignerMode),
+	EventFlowDebugger(this)
 {
 	WorkspaceMenuCategory = FWorkspaceItem::NewGroup(LOCTEXT("EventFlowWorkspaceMenu_Designer", "EventFlowDesigner"));
 
@@ -951,7 +953,7 @@ FEventFlowDesignerApplicationMode::FEventFlowDesignerApplicationMode(TSharedPtr<
 				->Split
 				(
 					FTabManager::NewSplitter()
-					->SetOrientation(Orient_Horizontal)
+					->SetOrientation(Orient_Vertical)
 					->Split
 					(
 						FTabManager::NewStack()
@@ -962,7 +964,7 @@ FEventFlowDesignerApplicationMode::FEventFlowDesignerApplicationMode(TSharedPtr<
 					->Split
 					(
 						FTabManager::NewStack()
-						->SetSizeCoefficient(0.20f)
+						->SetSizeCoefficient(0.2f)
 						->AddTab(FBlueprintEditorTabs::CompilerResultsID, ETabState::OpenedTab)
 						->AddTab(FBlueprintEditorTabs::FindResultsID, ETabState::ClosedTab)
 					)
@@ -1101,33 +1103,33 @@ bool FEventFlowDesignerApplicationMode::CanDesignerSelectAllNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandCut()
 {
-// 	const FScopedTransaction Transaction(FGenericCommands::Get().Cut->GetDescription());
-// 
-// 	OnDesignerCommandCopy();
-// 
-// 	const FGraphPanelSelectionSet OldSelectedNodes = GetDesignerGraphEditor()->GetSelectedNodes();
-// 	GetDesignerGraphEditor()->ClearSelectionSet();
-// 	for (FGraphPanelSelectionSet::TConstIterator It(OldSelectedNodes); It; ++It)
-// 	{
-// 		UEdGraphNode* Node = Cast<UEdGraphNode>(*It);
-// 		if (Node && Node->CanDuplicateNode())
-// 		{
-// 			GetDesignerGraphEditor()->SetNodeSelection(Node, true);
-// 		}
-// 	}
-// 
-// 	OnDesignerCommandDelete();
-// 
-// 	GetDesignerGraphEditor()->ClearSelectionSet();
-// 
-// 	for (FGraphPanelSelectionSet::TConstIterator It(OldSelectedNodes); It; ++It)
-// 	{
-// 		UEdGraphNode* Node = Cast<UEdGraphNode>(*It);
-// 		if (Node)
-// 		{
-// 			GetDesignerGraphEditor()->SetNodeSelection(Node, true);
-// 		}
-// 	}
+ 	const FScopedTransaction Transaction(FGenericCommands::Get().Cut->GetDescription());
+ 
+ 	OnDesignerCommandCopy();
+ 
+ 	const FGraphPanelSelectionSet OldSelectedNodes = GetDesignerGraphEditor()->GetSelectedNodes();
+ 	GetDesignerGraphEditor()->ClearSelectionSet();
+ 	for (FGraphPanelSelectionSet::TConstIterator It(OldSelectedNodes); It; ++It)
+ 	{
+ 		UEdGraphNode* Node = Cast<UEdGraphNode>(*It);
+ 		if (Node && Node->CanDuplicateNode())
+ 		{
+ 			GetDesignerGraphEditor()->SetNodeSelection(Node, true);
+ 		}
+ 	}
+ 
+ 	OnDesignerCommandDelete();
+ 
+ 	GetDesignerGraphEditor()->ClearSelectionSet();
+ 
+ 	for (FGraphPanelSelectionSet::TConstIterator It(OldSelectedNodes); It; ++It)
+ 	{
+ 		UEdGraphNode* Node = Cast<UEdGraphNode>(*It);
+ 		if (Node)
+ 		{
+ 			GetDesignerGraphEditor()->SetNodeSelection(Node, true);
+ 		}
+ 	}
 }
 
 bool FEventFlowDesignerApplicationMode::CanDesignerCutNodes()
@@ -1145,29 +1147,29 @@ bool FEventFlowDesignerApplicationMode::CanDesignerCutNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandCopy()
 {
-// 	FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
-// 	FString ExportedText;
-// 
-// 	for (FGraphPanelSelectionSet::TIterator it(SelectedNodes); it; ++it)
-// 	{
-// 		UEdGraphNode* Node = Cast<UEdGraphNode>(*it);
-// 		if (Node)
-// 			Node->PrepareForCopying();
-// 		else
-// 			it.RemoveCurrent();
-// 	}
-// 
-// 	FEdGraphUtilities::ExportNodesToText(SelectedNodes, ExportedText);
-// 	FPlatformApplicationMisc::ClipboardCopy(*ExportedText);
-// 
-// 	for (FGraphPanelSelectionSet::TIterator it(SelectedNodes); it; ++it)
-// 	{
-// 		UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(*it);
-// 		if (Node)
-// 		{
-// 			Node->PostCopyNode();
-// 		}
-// 	}
+ 	FGraphPanelSelectionSet SelectedNodes = GetSelectedNodes();
+ 	FString ExportedText;
+ 
+ 	for (FGraphPanelSelectionSet::TIterator it(SelectedNodes); it; ++it)
+ 	{
+ 		UEdGraphNode* Node = Cast<UEdGraphNode>(*it);
+ 		if (Node)
+ 			Node->PrepareForCopying();
+ 		else
+ 			it.RemoveCurrent();
+ 	}
+ 
+ 	FEdGraphUtilities::ExportNodesToText(SelectedNodes, ExportedText);
+ 	FPlatformApplicationMisc::ClipboardCopy(*ExportedText);
+ 
+ 	for (FGraphPanelSelectionSet::TIterator it(SelectedNodes); it; ++it)
+ 	{
+ 		UEventFlowSystemEditorNodeBase* Node = Cast<UEventFlowSystemEditorNodeBase>(*it);
+ 		if (Node)
+ 		{
+ 			Node->PostCopyNode();
+ 		}
+ 	}
 }
 
 bool FEventFlowDesignerApplicationMode::CanDesignerCopyNodes()
@@ -1185,54 +1187,54 @@ bool FEventFlowDesignerApplicationMode::CanDesignerCopyNodes()
 
 void FEventFlowDesignerApplicationMode::OnDesignerCommandPaste()
 {
-// 	const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
-// 
-// 	const FVector2D PasteLocation = GetDesignerGraphEditor()->GetPasteLocation();
-// 
-// 	UEdGraph* EdGraph = GetDesignerGraphEditor()->GetCurrentGraph();
-// 	EdGraph->Modify();
-// 	GetDesignerGraphEditor()->ClearSelectionSet();
-// 
-// 	FString ExportedText;
-// 	FPlatformApplicationMisc::ClipboardPaste(ExportedText);
-// 	TSet<UEdGraphNode*> ImportedNodes;
-// 	FEdGraphUtilities::ImportNodesFromText(EdGraph, ExportedText, ImportedNodes);
-// 
-// 	FVector2D AvgNodePosition(0.0f, 0.0f);
-// 
-// 	for (TSet<UEdGraphNode*>::TIterator It(ImportedNodes); It; ++It)
-// 	{
-// 		UEdGraphNode* Node = *It;
-// 		AvgNodePosition.X += Node->NodePosX;
-// 		AvgNodePosition.Y += Node->NodePosY;
-// 	}
-// 
-// 	float InvNumNodes = 1.0f / float(ImportedNodes.Num());
-// 	AvgNodePosition.X *= InvNumNodes;
-// 	AvgNodePosition.Y *= InvNumNodes;
-// 
-// 	for (TSet<UEdGraphNode*>::TIterator It(ImportedNodes); It; ++It)
-// 	{
-// 		UEdGraphNode* Node = *It;
-// 		GetDesignerGraphEditor()->SetNodeSelection(Node, true);
-// 
-// 		Node->NodePosX = (Node->NodePosX - AvgNodePosition.X) + PasteLocation.X;
-// 		Node->NodePosY = (Node->NodePosY - AvgNodePosition.Y) + PasteLocation.Y;
-// 
-// 		Node->SnapToGrid(16);
-// 
-// 		// Give new node a different Guid from the old one
-// 		Node->CreateNewGuid();
-// 	}
-// 
-// 	GetDesignerGraphEditor()->NotifyGraphChanged();
-// 
-// 	UObject* GraphOwner = EdGraph->GetOuter();
-// 	if (GraphOwner)
-// 	{
-// 		GraphOwner->PostEditChange();
-// 		GraphOwner->MarkPackageDirty();
-// 	}
+ 	const FScopedTransaction Transaction(FGenericCommands::Get().Paste->GetDescription());
+ 
+ 	const FVector2D PasteLocation = GetDesignerGraphEditor()->GetPasteLocation();
+ 
+ 	UEdGraph* EdGraph = GetDesignerGraphEditor()->GetCurrentGraph();
+ 	EdGraph->Modify();
+ 	GetDesignerGraphEditor()->ClearSelectionSet();
+ 
+ 	FString ExportedText;
+ 	FPlatformApplicationMisc::ClipboardPaste(ExportedText);
+ 	TSet<UEdGraphNode*> ImportedNodes;
+ 	FEdGraphUtilities::ImportNodesFromText(EdGraph, ExportedText, ImportedNodes);
+ 
+ 	FVector2D AvgNodePosition(0.0f, 0.0f);
+ 
+ 	for (TSet<UEdGraphNode*>::TIterator It(ImportedNodes); It; ++It)
+ 	{
+ 		UEdGraphNode* Node = *It;
+ 		AvgNodePosition.X += Node->NodePosX;
+ 		AvgNodePosition.Y += Node->NodePosY;
+ 	}
+ 
+ 	float InvNumNodes = 1.0f / float(ImportedNodes.Num());
+ 	AvgNodePosition.X *= InvNumNodes;
+ 	AvgNodePosition.Y *= InvNumNodes;
+ 
+ 	for (TSet<UEdGraphNode*>::TIterator It(ImportedNodes); It; ++It)
+ 	{
+ 		UEdGraphNode* Node = *It;
+ 		GetDesignerGraphEditor()->SetNodeSelection(Node, true);
+ 
+ 		Node->NodePosX = (Node->NodePosX - AvgNodePosition.X) + PasteLocation.X;
+ 		Node->NodePosY = (Node->NodePosY - AvgNodePosition.Y) + PasteLocation.Y;
+ 
+ 		Node->SnapToGrid(16);
+ 
+ 		// Give new node a different Guid from the old one
+ 		Node->CreateNewGuid();
+ 	}
+ 
+ 	GetDesignerGraphEditor()->NotifyGraphChanged();
+ 
+ 	UObject* GraphOwner = EdGraph->GetOuter();
+ 	if (GraphOwner)
+ 	{
+ 		GraphOwner->PostEditChange();
+ 		GraphOwner->MarkPackageDirty();
+ 	}
 }
 
 bool FEventFlowDesignerApplicationMode::CanDesignerPasteNodes()
@@ -1294,6 +1296,30 @@ bool FEventFlowDesignerApplicationMode::CanDesignerDeleteNodes()
 		}
 	}
 	return true;
+}
+
+void FEventFlowDesignerApplicationMode::FEventFlowDebugger::Tick(float DeltaTime)
+{
+	for (TWeakObjectPtr<UEventFlowSystemEditorNodeBase> Node : PreActiveNodes)
+	{
+		if (Node.IsValid())
+		{
+			Node->DebugState = EEventFlowSystemEditorNodeDebugState::None;
+		}
+	}
+	PreActiveNodes.Empty();
+
+	if (UXD_EventFlowBase* WatchedEventFlow = Cast<UXD_EventFlowBase>(DesignerApplicationMode->GetBlueprint()->GetObjectBeingDebugged()))
+	{
+		if (UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = Cast<UEventFlowSystemEditorGraph>(DesignerApplicationMode->GetBlueprint()->EdGraph))
+		{
+			auto ChildNodes = EventFlowSystemEditorGraph->StartNode->GetChildNodes<UEventSequenceEdNodeBase>();
+			if (ChildNodes.Num() > 0)
+			{
+				ChildNodes[0]->UpdateDebugInfo(WatchedEventFlow, 0, PreActiveNodes);
+			}
+		}
+	}
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -124,14 +124,19 @@ public:
 	FOnElementFinished OnElementFinished;
 };
 
-UCLASS(meta = (DisplayName = "测试"))
-class XD_EVENTFLOWSYSTEM_API UElementTest : public UXD_EventFlowElementBase
+UCLASS(meta = (DisplayName = "调试"))
+class XD_EVENTFLOWSYSTEM_API UElement_Debug : public UXD_EventFlowElementBase
 {
 	GENERATED_BODY()
 public:
+	UPROPERTY(EditAnywhere, Category = "调试", meta = (DisplayName = "完成时间"))
+	float FinishTime = 1.f;
+
 	FTimerHandle TimerHandle;
 
 	void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
 
 	void WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
+
+	void FinishEventFlowElement();
 };

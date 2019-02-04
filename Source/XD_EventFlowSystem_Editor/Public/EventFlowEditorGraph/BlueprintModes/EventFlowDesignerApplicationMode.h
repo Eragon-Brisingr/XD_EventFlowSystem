@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "EventFlowBlueprintApplicationModeBase.h"
+#include <Tickable.h>
 
 class SGraphEditor;
 
@@ -54,4 +55,21 @@ private:
 
 	void OnDesignerCommandDelete();
 	bool CanDesignerDeleteNodes();
+
+public:
+	struct FEventFlowDebugger : public FTickableGameObject
+	{
+		FEventFlowDebugger(FEventFlowDesignerApplicationMode* DesignerApplicationMode)
+			:DesignerApplicationMode(DesignerApplicationMode)
+		{}
+
+		FEventFlowDesignerApplicationMode* DesignerApplicationMode;
+
+		TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>> PreActiveNodes;
+
+		void Tick(float DeltaTime) override;
+		TStatId GetStatId() const override { RETURN_QUICK_DECLARE_CYCLE_STAT(FEventFlowDesignerApplicationMode, STATGROUP_Tickables); }
+	};
+
+	FEventFlowDebugger EventFlowDebugger;
 };

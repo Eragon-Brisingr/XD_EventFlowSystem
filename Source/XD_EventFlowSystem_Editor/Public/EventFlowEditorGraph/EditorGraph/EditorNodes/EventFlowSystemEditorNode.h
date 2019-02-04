@@ -18,10 +18,18 @@ class FCompilerResultsLog;
 class UEventSequenceBranch_SelectionEdNode;
 class UEventFlowGraphBlueprintGeneratedClass;
 class UEventFlowSystemEditorGraph;
+class UXD_EventFlowBase;
 
 /**
  * 
  */
+enum class EEventFlowSystemEditorNodeDebugState : uint8
+{
+	None,
+	Finished,
+	Actived
+};
+
 UCLASS()
 class UEventFlowSystemEditorNodeBase : public UEdGraphNode
 {
@@ -73,6 +81,7 @@ public:
 	virtual TSharedPtr<SWidget> GetContentWidget();
 	virtual void UpdateVisualNode();
 	virtual FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const;
+	virtual void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) {}
 
 	virtual bool GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const;
 protected:
@@ -84,6 +93,8 @@ public:
 
 	UPROPERTY(Instanced)
 	UEventFlowGraphNodeBase* EventFlowBpNode = nullptr;
+public:
+	EEventFlowSystemEditorNodeDebugState DebugState;
 };
 
 UCLASS()
@@ -166,7 +177,11 @@ public:
 	void AddElement(UEventElementEdNode* Element);
 	void RemoveElement(UEventElementEdNode* Element);
 
-	virtual UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
+	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
+protected:
+	virtual UXD_EventFlowSequenceBase* BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
+public:
+	void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) override;
 
 	static TSubclassOf<UEventSequenceEdNodeBase> GetEdNodeClassByRuntimeClass(const TSubclassOf<UXD_EventFlowSequenceBase>& RunTimeSequence);
 
@@ -182,7 +197,8 @@ class UEventSequenceListEdNode : public UEventSequenceEdNodeBase
 {
 	GENERATED_BODY()
 public:
-	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+	UXD_EventFlowSequenceBase* BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+	void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) override;
 };
 
 UCLASS()
@@ -192,7 +208,8 @@ class UEventSequenceBranchEdNode : public UEventSequenceEdNodeBase
 public:
 	FPinConnectionResponse CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const override;
 	bool GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override;
-	UXD_EventFlowSequenceBase* BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+	UXD_EventFlowSequenceBase* BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const override;
+	void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) override;
 };
 
 UCLASS()

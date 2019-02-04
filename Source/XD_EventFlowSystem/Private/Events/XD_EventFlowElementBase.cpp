@@ -150,14 +150,19 @@ class UXD_EventFlowBase* UXD_EventFlowElementBase::GetEventFlow() const
 	return OwingEventFlowSequence ? OwingEventFlowSequence->OwingEventFlow : nullptr;
 }
 
-void UElementTest::WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
+void UElement_Debug::WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
 {
- 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, FTimerDelegate::CreateLambda([this]() { FinishEventFlowElement(); }), FMath::RandBool() ? 1.f : 2.f, false);
+ 	GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &UElement_Debug::FinishEventFlowElement, FinishTime, false);
 }
 
-void UElementTest::WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
+void UElement_Debug::WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle);
+}
+
+void UElement_Debug::FinishEventFlowElement()
+{
+	UXD_EventFlowElementBase::FinishEventFlowElement();
 }
 
 #undef LOCTEXT_NAMESPACE

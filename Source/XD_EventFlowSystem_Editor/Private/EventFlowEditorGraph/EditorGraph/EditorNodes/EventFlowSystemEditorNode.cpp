@@ -17,6 +17,7 @@
 #include "CompilerResultsLog.h"
 #include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "EventFlowSystem_EditorStyle.h"
+#include "XD_EventFlowBase.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -298,6 +299,13 @@ void UEventElementEdNode::DestroyNode()
 
 FSlateColor UEventElementEdNode::GetNodeColor() const
 {
+	switch (DebugState)
+	{
+	case EEventFlowSystemEditorNodeDebugState::Actived:
+		return EventFlowSystem_EditorStyle::Debugger::ActivedElement;
+	case EEventFlowSystemEditorNodeDebugState::Finished:
+		return EventFlowSystem_EditorStyle::Debugger::FinishedElement;
+	}
 	return EventFlowSystem_EditorStyle::NodeBody::Element;
 }
 
@@ -336,20 +344,26 @@ UXD_EventFlowSequenceBase* UEventSequenceEdNodeBase::BuildSequenceTree(UEventFlo
 	{
 		UXD_EventFlowSequenceBase** P_Sequence = Outer->SequenceList.FindByPredicate([&](UXD_EventFlowSequenceBase* E) {return E->GetName() == EventFlowBpNode->GetName(); });
 		UXD_EventFlowSequenceBase* Sequence = P_Sequence ? *P_Sequence : nullptr;
-		if (Sequence == nullptr)
+		return Sequence ? Sequence : BuildSequenceTreeImpl(Outer, MessageLog);
+	}
+	return nullptr;
+}
+
+UXD_EventFlowSequenceBase* UEventSequenceEdNodeBase::BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
+{
+	if (EventFlowBpNode)
+	{
+		UXD_EventFlowSequenceBase* Sequence = DuplicatedBpNode<UXD_EventFlowSequenceBase>(Outer);
+		Outer->SequenceList.Add(Sequence);
+		for (UEventElementEdNode* ElementEdNode : EventElements)
 		{
-			Sequence = DuplicatedBpNode<UXD_EventFlowSequenceBase>(Outer);
-			Outer->SequenceList.Add(Sequence);
-			for (UEventElementEdNode* ElementEdNode : EventElements)
+			if (ElementEdNode->EventFlowBpNode)
 			{
-				if (ElementEdNode->EventFlowBpNode)
-				{
-					Sequence->EventFlowElementList.Add(ElementEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence));
-				}
-				else
-				{
-					MessageLog.Error(TEXT("@@ 中任务元素 @@ 丢失"), this, ElementEdNode);
-				}
+				Sequence->EventFlowElementList.Add(ElementEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence));
+			}
+			else
+			{
+				MessageLog.Error(TEXT("@@ 中任务元素 @@ 丢失"), this, ElementEdNode);
 			}
 		}
 		return Sequence;
@@ -358,6 +372,31 @@ UXD_EventFlowSequenceBase* UEventSequenceEdNodeBase::BuildSequenceTree(UEventFlo
 	{
 		MessageLog.Error(TEXT("@@ 中任务序列丢失"), this);
 		return nullptr;
+	}
+}
+
+void UEventSequenceEdNodeBase::UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector)
+{
+	Super::UpdateDebugInfo(DebuggerTarget, Depth, Collector);
+
+	if (UXD_EventFlowSequenceBase* EventFlowSequence = Cast<UXD_EventFlowSequenceBase>(DebuggerTarget->CurrentEventFlowSequenceList[Depth]))
+	{
+		for (UEventElementEdNode* ElementEdNode : EventElements)
+		{
+			if (UXD_EventFlowElementBase** P_Element = EventFlowSequence->EventFlowElementList.FindByPredicate([&](UXD_EventFlowElementBase* E) {return E && E->GetName() == ElementEdNode->EventFlowBpNode->GetName(); }))
+			{
+				UXD_EventFlowElementBase* Element = *P_Element;
+				if (Element->IsFinished())
+				{
+					ElementEdNode->DebugState = EEventFlowSystemEditorNodeDebugState::Finished;
+				}
+				else if (Element->bIsActive)
+				{
+					ElementEdNode->DebugState = EEventFlowSystemEditorNodeDebugState::Actived;
+				}
+				Collector.Add(ElementEdNode);
+			}
+		}
 	}
 }
 
@@ -387,12 +426,19 @@ void UEventSequenceEdNodeBase::DestroyNode()
 
 FSlateColor UEventSequenceEdNodeBase::GetNodeColor() const
 {
+	switch (DebugState)
+	{
+	case EEventFlowSystemEditorNodeDebugState::Actived:
+		return EventFlowSystem_EditorStyle::Debugger::ActivedSequence;
+	case EEventFlowSystemEditorNodeDebugState::Finished:
+		return EventFlowSystem_EditorStyle::Debugger::FinishedSequence;
+	}
 	return EventFlowSystem_EditorStyle::NodeBody::Sequence;
 }
 
-UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
+UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
 {
-	if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Super::BuildSequenceTree(Outer, MessageLog)))
+	if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Super::BuildSequenceTreeImpl(Outer, MessageLog)))
 	{
 		if (EventElements.Num() == 0)
 		{
@@ -406,6 +452,27 @@ UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTree(UEventFlo
 		return List;
 	}
 	return nullptr;
+}
+
+void UEventSequenceListEdNode::UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector)
+{
+	Super::UpdateDebugInfo(DebuggerTarget, Depth, Collector);
+
+	DebugState = DebuggerTarget->EventFlowState == EEventFlowState::Underway && DebuggerTarget->CurrentEventFlowSequenceList.Num() == Depth + 1 ? EEventFlowSystemEditorNodeDebugState::Actived : EEventFlowSystemEditorNodeDebugState::Finished;
+	Collector.Add(this);
+
+	int32 NextDepth = Depth + 1;
+	if (DebuggerTarget->CurrentEventFlowSequenceList.Num() > NextDepth)
+	{
+		for (UEventSequenceEdNodeBase* NextSequenceEdNode : GetChildNodes<UEventSequenceEdNodeBase>())
+		{
+			if (NextSequenceEdNode->EventFlowBpNode && NextSequenceEdNode->EventFlowBpNode->GetName() == DebuggerTarget->CurrentEventFlowSequenceList[NextDepth]->GetName())
+			{
+				NextSequenceEdNode->UpdateDebugInfo(DebuggerTarget, NextDepth, Collector);
+				break;
+			}
+		}
+	}
 }
 
 FPinConnectionResponse UEventSequenceBranchEdNode::CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const
@@ -443,34 +510,87 @@ bool UEventSequenceBranchEdNode::GetNodeLinkableContextActions(FGraphContextMenu
 	return true;
 }
 
-UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTree(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
+UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTreeImpl(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const
 {
-	if (UEventFlowSequence_Branch* Branch = Cast<UEventFlowSequence_Branch>(Super::BuildSequenceTree(Outer, MessageLog)))
+	if (UEventFlowSequence_Branch* Branch = Cast<UEventFlowSequence_Branch>(Super::BuildSequenceTreeImpl(Outer, MessageLog)))
 	{
 		TArray<UEventSequenceBranch_SelectionEdNode*> Branch_SelectionEdNodes = GetChildNodes<UEventSequenceBranch_SelectionEdNode>();
-		if (Branch_SelectionEdNodes.Num() < 2)
+		if (Branch_SelectionEdNodes.Num() < 1)
 		{
-			MessageLog.Error(TEXT("@@ 分支数量必须大于等于2"), this);
+			MessageLog.Error(TEXT("@@ 分支数量必须大于等于1"), this);
 		}
 		for (UEventSequenceBranch_SelectionEdNode* BranchEdNode : Branch_SelectionEdNodes)
 		{
-			FEventFlowElementFinishWrapper FinishWarpper;
-			FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Branch);
-			for (UEventSequenceEdNodeBase* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
+			if (BranchEdNode->EventFlowBpNode)
 			{
-				//TODO 根据边的Node设置Tag
-				FinishWarpper.EventFlowFinishBranch.Add(NAME_None, NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog));
+				FEventFlowElementFinishWrapper FinishWarpper;
+				FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Branch);
+				for (UEventSequenceEdNodeBase* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
+				{
+					//TODO 根据边的Node设置Tag
+					FinishWarpper.EventFlowFinishBranch.Add(NAME_None, NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog));
+				}
+				Branch->EventFlowElementFinishList.Add(FinishWarpper);
 			}
-			Branch->EventFlowElementFinishList.Add(FinishWarpper);
 		}
 		return Branch;
 	}
 	return nullptr;
 }
 
+void UEventSequenceBranchEdNode::UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector)
+{
+	Super::UpdateDebugInfo(DebuggerTarget, Depth, Collector);
+
+	DebugState = DebuggerTarget->EventFlowState == EEventFlowState::Underway && DebuggerTarget->CurrentEventFlowSequenceList.Num() == Depth + 1 ? EEventFlowSystemEditorNodeDebugState::Actived : EEventFlowSystemEditorNodeDebugState::Finished;
+	Collector.Add(this);
+
+	if (UEventFlowSequence_Branch* EventFlowSequence_Branch = Cast<UEventFlowSequence_Branch>(DebuggerTarget->CurrentEventFlowSequenceList[Depth]))
+	{
+		for (UEventSequenceBranch_SelectionEdNode* Branch_SelectionEdNode : GetChildNodes<UEventSequenceBranch_SelectionEdNode>())
+		{
+			if (DebugState == EEventFlowSystemEditorNodeDebugState::Actived)
+			{
+				if (EventFlowSequence_Branch->bIsFinishListActive)
+				{
+					Branch_SelectionEdNode->DebugState = EEventFlowSystemEditorNodeDebugState::Actived;
+					Collector.Add(Branch_SelectionEdNode);
+				}
+			}
+			else
+			{
+				if (const FEventFlowElementFinishWrapper* FinishedElement = EventFlowSequence_Branch->EventFlowElementFinishList.FindByPredicate([](const FEventFlowElementFinishWrapper& E) {return E.EventFlowElement->IsFinished();}))
+				{
+					if (Branch_SelectionEdNode->EventFlowBpNode && Branch_SelectionEdNode->EventFlowBpNode->GetName() == FinishedElement->EventFlowElement->GetName())
+					{
+						Branch_SelectionEdNode->DebugState = EEventFlowSystemEditorNodeDebugState::Finished;
+						Collector.Add(Branch_SelectionEdNode);
+					}
+				}
+
+				for (UEventSequenceEdNodeBase* NextSequenceEdNode : Branch_SelectionEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
+				{
+					int32 NextDepth = Depth + 1;
+					if (NextSequenceEdNode->EventFlowBpNode && NextSequenceEdNode->EventFlowBpNode->GetName() == DebuggerTarget->CurrentEventFlowSequenceList[NextDepth]->GetName())
+					{
+						NextSequenceEdNode->UpdateDebugInfo(DebuggerTarget, NextDepth, Collector);
+					}
+				}
+			}
+		}
+	}
+}
+
 FSlateColor UEventSequenceBranch_SelectionEdNode::GetNodeColor() const
 {
-	return EventFlowSystem_EditorStyle::NodeBody::BranchElement;
+	switch (DebugState)
+	{
+	case EEventFlowSystemEditorNodeDebugState::Actived:
+		return EventFlowSystem_EditorStyle::Debugger::ActivedBranchSelection;
+	case EEventFlowSystemEditorNodeDebugState::Finished:
+		return EventFlowSystem_EditorStyle::Debugger::FinishedBranchSelection;
+	}
+	return EventFlowSystem_EditorStyle::NodeBody::BranchSelection;
 }
 
 FPinConnectionResponse UEventSequenceBranch_SelectionEdNode::CanLinkedTo(const UEventFlowSystemEditorNodeBase* AnotherNode) const
