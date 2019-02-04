@@ -1,6 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "EventFlowSystemEditorConnectionDrawingPolicy.h"
 #include "DrawElements.h"
+#include "EventFlowSystemEditorNode.h"
 
 FEventFlowSystemEditorConnectionDrawingPolicy::FEventFlowSystemEditorConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID, float ZoomFactor, const FSlateRect& InClippingRect, FSlateWindowElementList& InDrawElements, UEdGraph* InGraphObj)
 	: FConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, ZoomFactor, InClippingRect, InDrawElements)
@@ -18,6 +19,16 @@ void FEventFlowSystemEditorConnectionDrawingPolicy::DetermineWiringStyle(UEdGrap
 	if (bDeemphasizeUnhoveredPins)
 	{
 		ApplyHoverDeemphasis(OutputPin, InputPin, /*inout*/ Params.WireThickness, /*inout*/ Params.WireColor);
+	}
+
+	UEventFlowSystemEditorNodeBase* InEdNode = Cast<UEventFlowSystemEditorNodeBase>(InputPin->GetOwningNode());
+	UEventFlowSystemEditorNodeBase* OutEdNode = Cast<UEventFlowSystemEditorNodeBase>(OutputPin->GetOwningNode());
+	if (InEdNode && OutEdNode)
+	{
+		if (OutEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None && InEdNode->DebugState != EEventFlowSystemEditorNodeDebugState::None)
+		{
+			Params.WireColor = FLinearColor::Green;
+		}
 	}
 }
 
