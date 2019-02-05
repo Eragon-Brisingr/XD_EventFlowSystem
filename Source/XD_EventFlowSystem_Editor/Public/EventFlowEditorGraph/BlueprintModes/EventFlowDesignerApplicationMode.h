@@ -63,6 +63,8 @@ public:
 			:DesignerApplicationMode(DesignerApplicationMode)
 		{}
 
+		bool IsTickableInEditor() const override { return true; }
+
 		FEventFlowDesignerApplicationMode* DesignerApplicationMode;
 
 		TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>> PreActiveNodes;

@@ -159,6 +159,12 @@ void UEventFlowSystemEditorNodeBase::PostCopyNode()
 	}
 }
 
+UEventFlowSystemStartEdNode::UEventFlowSystemStartEdNode(const FObjectInitializer& ObjectInitializer)
+	:Super(ObjectInitializer)
+{
+	DebugState = EEventFlowSystemEditorNodeDebugState::Actived;
+}
+
 FText UEventFlowSystemStartEdNode::GetNodeTitle(ENodeTitleType::Type TitleType) const
 {
 	return LOCTEXT("事件开始", "事件开始");

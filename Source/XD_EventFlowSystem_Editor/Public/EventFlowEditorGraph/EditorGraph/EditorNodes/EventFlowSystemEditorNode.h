@@ -70,7 +70,7 @@ public:
 	T* DuplicatedBpNode(UObject* Outer) const
 	{
 		T* InstanceNode = CastChecked<T>(StaticDuplicateObject(EventFlowBpNode, Outer, *EventFlowBpNode->GetName(), RF_Transactional));
-		InstanceNode->SetFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_Public);
+		InstanceNode->SetFlags(RF_Public | RF_ArchetypeObject);
 		return InstanceNode;
 	}
 public:
@@ -101,6 +101,8 @@ class UEventFlowSystemStartEdNode : public UEventFlowSystemEditorNodeBase
 {
 	GENERATED_BODY()
 public:
+	UEventFlowSystemStartEdNode(const FObjectInitializer& ObjectInitializer);
+
 	bool CanUserDeleteNode() const override { return false; }
 	bool CanDuplicateNode() const override { return false; }
 
