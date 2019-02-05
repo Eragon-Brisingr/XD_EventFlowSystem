@@ -47,6 +47,7 @@ public:
 #if WITH_EDITOR
 	UClass* GetBlueprintClass() const override;
 	void GetReparentingRules(TSet<const UClass*>& AllowedChildrenOfClasses, TSet<const UClass*>& DisallowedChildrenOfClasses) const override;
+	bool AlwaysCompileOnLoad() const override { return true; }
 #endif
 public:
 #if WITH_EDITORONLY_DATA

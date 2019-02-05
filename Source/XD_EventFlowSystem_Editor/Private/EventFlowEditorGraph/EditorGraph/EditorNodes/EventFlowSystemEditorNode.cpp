@@ -22,6 +22,18 @@
 
 UEventFlowSystemEditorNodeBase::UEventFlowSystemEditorNodeBase(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer){}
 
+void UEventFlowSystemEditorNodeBase::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	MarkOwingBlueprintDirty();
+}
+
+void UEventFlowSystemEditorNodeBase::PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeChainProperty(PropertyChangedEvent);
+	MarkOwingBlueprintDirty();
+}
+
 const FName DefualtPinType("Default");
 const FName InPinName("InPin");
 const FName OutPinName("OutPin");
@@ -50,6 +62,11 @@ bool UEventFlowSystemEditorNodeBase::GetNodeLinkableContextActions(FGraphContext
 	return false;
 }
 
+UEventFlowSystemEditorGraph* UEventFlowSystemEditorNodeBase::GetEventFlowGraph() const
+{
+	return Cast<UEventFlowSystemEditorGraph>(GetGraph());
+}
+
 bool UEventFlowSystemEditorNodeBase::HasOutputPins()
 {
 	return true;
@@ -58,6 +75,11 @@ bool UEventFlowSystemEditorNodeBase::HasOutputPins()
 bool UEventFlowSystemEditorNodeBase::HasInputPins()
 {
 	return true;
+}
+
+void UEventFlowSystemEditorNodeBase::MarkOwingBlueprintDirty()
+{
+	GetEventFlowGraph()->GetBlueprint()->Status = EBlueprintStatus::BS_Dirty;
 }
 
 FSlateColor UEventFlowSystemEditorNodeBase::GetNodeColor() const
@@ -136,6 +158,11 @@ void UEventFlowSystemEditorNodeBase::GetContextMenuActions(const FGraphNodeConte
 		MenuBuilder->AddMenuEntry(FGraphEditorCommands::Get().BreakNodeLinks);
 	}
 	MenuBuilder->EndSection();
+}
+
+void UEventFlowSystemEditorNodeBase::NodeConnectionListChanged()
+{
+	MarkOwingBlueprintDirty();
 }
 
 void UEventFlowSystemEditorNodeBase::SetAssetNode(UEventFlowGraphNodeBase * InNode)
@@ -302,6 +329,7 @@ FSlateColor UEventElementEdNode::GetNodeColor() const
 
 void UEventSequenceEdNodeBase::AddElement(UEventElementEdNode* Element)
 {
+	MarkOwingBlueprintDirty();
 	GetGraph()->Modify();
 	Modify();
 
@@ -322,9 +350,12 @@ void UEventSequenceEdNodeBase::AddElement(UEventElementEdNode* Element)
 
 void UEventSequenceEdNodeBase::RemoveElement(UEventElementEdNode* Element)
 {
+	MarkOwingBlueprintDirty();
+	GetGraph()->Modify();
+	Modify();
+
 	EventElements.Remove(Element);
 	Cast<UEventFlowSystemEditorGraph>(GetGraph())->EventElements.Remove(Element);
-	Modify();
 
 	GetGraph()->NotifyGraphChanged();
 }

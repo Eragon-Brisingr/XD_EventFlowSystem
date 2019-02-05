@@ -36,7 +36,9 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 
 	PropertyView = EditModule.CreateDetailView(DetailsViewArgs);
 
-	PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Editor.Pin().Get())));
+	FEventFlowSystemEditor* EventFlowSystemEditor = Editor.Pin().Get();
+	PropertyView->OnFinishedChangingProperties().AddLambda([=](const FPropertyChangedEvent&) { EventFlowSystemEditor->GetBlueprintObj()->Status = EBlueprintStatus::BS_Dirty; });
+	PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(EventFlowSystemEditor)));
 
 	class FEventFlowDesignerDelegate : public IDetailCustomization
 	{
@@ -193,7 +195,7 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 		}
 	};
 
-	FEventFlowSystemEditor* BlueprintEditor = Editor.Pin().Get();
+	FEventFlowSystemEditor* BlueprintEditor = EventFlowSystemEditor;
 	PropertyView->RegisterInstancedCustomPropertyLayout(UObject::StaticClass(), FOnGetDetailCustomizationInstance::CreateStatic(&FEventFlowDesignerDelegate::MakeInstance, BlueprintEditor, BlueprintEditor->GetEventFlowBlueprint()));
 
 	ChildSlot

@@ -37,6 +37,9 @@ class UEventFlowSystemEditorNodeBase : public UEdGraphNode
 public:
 	UEventFlowSystemEditorNodeBase(const FObjectInitializer& ObjectInitializer);
 
+	void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	void PostEditChangeChainProperty(struct FPropertyChangedChainEvent& PropertyChangedEvent) override;
+
 	// Inherited via EdGraphNode.h
 	TSharedPtr<SGraphNode> CreateVisualWidget() override; 	/** Create a visual widget to represent this node in a graph editor or graph panel.  If not implemented, the default node factory will be used. */
 	void AllocateDefaultPins() override;
@@ -45,6 +48,7 @@ public:
 	void DestroyNode() override;
 	void AutowireNewNode(UEdGraphPin* FromPin) override;
 	void GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const override;
+	void NodeConnectionListChanged() override;
 
 	template<typename T>
 	TArray<T*> GetChildNodes() const
@@ -83,13 +87,15 @@ public:
 	virtual void UpdateDebugInfo(UXD_EventFlowBase* DebuggerTarget, int32 Depth, TArray<TWeakObjectPtr<class UEventFlowSystemEditorNodeBase>>& Collector) {}
 
 	virtual bool GetNodeLinkableContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const;
+	virtual UEventFlowSystemEditorGraph* GetEventFlowGraph() const;
+
+	virtual FSlateColor GetNodeColor() const;
 protected:
 	virtual bool HasOutputPins();
 	virtual bool HasInputPins();
 	TSharedPtr<SGraphNode> SlateNode;
 public:
-	virtual FSlateColor GetNodeColor() const;
-
+	void MarkOwingBlueprintDirty();
 	UPROPERTY(Instanced)
 	UEventFlowGraphNodeBase* EventFlowBpNode = nullptr;
 public:
@@ -156,6 +162,8 @@ class UEventElementEdNode : public UEventFlowSystemEditorNodeBase
 public:
 	bool HasInputPins() override { return false; }
 	bool HasOutputPins() override { return false; }
+
+	UEventFlowSystemEditorGraph* GetEventFlowGraph() const override { return OwingGraph; }
 
 	void DestroyNode() override;
 	FSlateColor GetNodeColor() const override;

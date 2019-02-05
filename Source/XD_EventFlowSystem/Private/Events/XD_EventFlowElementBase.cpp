@@ -33,9 +33,9 @@ void UXD_EventFlowElementBase::GetLifetimeReplicatedProps(TArray<class FLifetime
 	}
 
 	DOREPLIFETIME(UXD_EventFlowElementBase, bIsFinished);
-	DOREPLIFETIME(UXD_EventFlowElementBase, bIsMust);
-	DOREPLIFETIME(UXD_EventFlowElementBase, bIsShowEventFlowElement);
-	DOREPLIFETIME(UXD_EventFlowElementBase, ElementTemplate);
+	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, bIsMust, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, bIsShowEventFlowElement, COND_InitialOnly);
+	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, ElementTemplate, COND_InitialOnly);
 }
 
 FString UXD_EventFlowElementBase::GetVarRefName() const
@@ -93,23 +93,14 @@ void UXD_EventFlowElementBase::FinishEventFlowElement(const FName& NextBranchTag
 	}
 }
 
-void UXD_EventFlowElementBase::FinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)
-{
-	if (bIsFinished)
-	{
-		WhenFinishEventFlowElement(GetOwningCharacter(), GetOwingController());
-		OnElementFinished.Broadcast(this);
-	}
-}
-
-void UXD_EventFlowElementBase::SetReactive()
+void UXD_EventFlowElementBase::SetUnfinished()
 {
 	if (bIsFinished == true)
 	{
 		bIsFinished = false;
 		if (bIsMust && OwingEventFlowSequence->EventFlowElementList.Contains(this))
 		{
-			OwingEventFlowSequence->WhenEventFlowElementReactive();
+			OwingEventFlowSequence->WhenEventFlowElementUnfinished();
 		}
 	}
 }

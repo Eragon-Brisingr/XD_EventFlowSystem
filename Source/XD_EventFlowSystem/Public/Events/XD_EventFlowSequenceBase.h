@@ -75,7 +75,7 @@ public:
 	virtual void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
 
 	//当游戏事件元素从完成变为未完成 e.g.需收集的道具开始达到要求，之后被减少了
-	virtual void WhenEventFlowElementReactive(){}
+	virtual void WhenEventFlowElementUnfinished(){}
 
 	bool IsEveryMustEventFlowElementFinished() const;
 
@@ -140,7 +140,7 @@ public:
 
 	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 
-	void WhenEventFlowElementReactive() override;
+	void WhenEventFlowElementUnfinished() override;
 
 	void DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch) override;
 

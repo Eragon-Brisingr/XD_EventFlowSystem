@@ -323,7 +323,7 @@ void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowE
 	}
 }
 
-void UEventFlowSequence_Branch::WhenEventFlowElementReactive()
+void UEventFlowSequence_Branch::WhenEventFlowElementUnfinished()
 {
 	DeactiveFinishBranchs();
 }

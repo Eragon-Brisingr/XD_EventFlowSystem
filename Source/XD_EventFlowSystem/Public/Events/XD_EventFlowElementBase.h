@@ -22,7 +22,7 @@ public:
 
 	bool IsSupportedForNetworking()const override;
 
-	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const;
+	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	FString GetVarRefName() const override;
 
@@ -77,7 +77,7 @@ public:
 
 	//该游戏元素又未完成了调用这个 e.g.目标数量道具减少
 	UFUNCTION(BlueprintCallable, Category = "游戏事件")
-	void SetReactive();
+	void SetUnfinished();
 public:
 #if WITH_EDITORONLY_DATA
 	uint8 bIsActive : 1;
@@ -93,12 +93,6 @@ public:
 	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "游戏事件")
 	void WhenDeactiveEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
 	virtual void WhenDeactiveEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
-
-	void FinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
-	//游戏事件完成后调用
-	UFUNCTION(BlueprintAuthorityOnly, BlueprintNativeEvent, Category = "游戏事件")
-	void WhenFinishEventFlowElement(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner);
-	virtual void WhenFinishEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner){}
 public:
 	UPROPERTY(BlueprintReadOnly, Category = "游戏事件")
 	class UXD_EventFlowSequenceBase* OwingEventFlowSequence;
@@ -118,10 +112,6 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementDeactived, UXD_EventFlowElementBase*, Element);
 	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "元素反激活"))
 	FOnElementDeactived OnElementDeactived;
-
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnElementFinished, UXD_EventFlowElementBase*, Element);
-	UPROPERTY(BlueprintAssignable, meta = (DisplayName = "元素结束"))
-	FOnElementFinished OnElementFinished;
 };
 
 UCLASS(meta = (DisplayName = "调试"))
