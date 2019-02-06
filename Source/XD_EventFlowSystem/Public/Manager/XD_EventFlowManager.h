@@ -63,22 +63,21 @@ public:
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAcceptEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnAcceptEventFlow OnAcceptEventFlow;
+	FOnAcceptEventFlow OnEventFlowActived;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveUnderwayEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnRemoveUnderwayEventFlow OnRemoveUnderwayEventFlow;
+	FOnRemoveUnderwayEventFlow OnUnderwayEventFlowRemoved;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFinishEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnFinishEventFlow OnFinishEventFlow;
+	FOnFinishEventFlow OnEventFlowFinished;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRemoveFinishEventFlow, class UXD_EventFlowBase*, EventFlow);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnRemoveFinishEventFlow OnRemoveFinishEventFlow;
+	FOnRemoveFinishEventFlow OnFinishEventFlowRemoved;
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnFinishedEventFlowSequence, class UXD_EventFlowBase*, EventFlow, class UXD_EventFlowSequenceBase*, FinishedEventFlowSequence, class UXD_EventFlowSequenceBase*, UnderwayEventFlowSequences);
 	UPROPERTY(BlueprintAssignable, Category = "角色|游戏事件")
-	FOnFinishedEventFlowSequence OnFinishedEventFlowSequence;
-
+	FOnFinishedEventFlowSequence OnEventFlowSequenceFinished;
 };

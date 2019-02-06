@@ -38,6 +38,7 @@ void UXD_EventFlowSequenceBase::ReplicatedEventFlowElement(bool& WroteSomething,
 		if (EventFlowElement)
 		{
 			WroteSomething |= Channel->ReplicateSubobject(EventFlowElement, *Bunch, *RepFlags);
+			EventFlowElement->ReplicatedElementSubobject(WroteSomething, Channel, Bunch, RepFlags);
 		}
 	}
 }
@@ -61,8 +62,9 @@ UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject*
 	Sequence->SequenceTemplate = this;
 	for (int32 Idx = 0; Idx < EventFlowElementList.Num(); ++Idx)
 	{
-		Sequence->EventFlowElementList[Idx]->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded);
-		Sequence->EventFlowElementList[Idx]->ElementTemplate = EventFlowElementList[Idx];
+		UXD_EventFlowElementBase*& Element = Sequence->EventFlowElementList[Idx];
+		Element->ClearFlags(RF_Load);
+		Element->ElementTemplate = EventFlowElementList[Idx];
 	}
 	Sequence->OnRep_EventFlowElementList();
 	return Sequence;
@@ -135,7 +137,7 @@ void UXD_EventFlowSequenceBase::FinishEventFlowSequence()
 
 UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetSequenceInstance(UObject* Outer) const
 {
-	return CastChecked<UXD_EventFlowSequenceBase>(GetDuplicatedNode(Outer));
+	return GetDuplicatedNode(Outer);
 }
 
 bool UXD_EventFlowSequenceBase::HasMustEventFlowElement()
@@ -210,7 +212,12 @@ void UXD_EventFlowSequenceBase::ReinitEventFlowSequence()
 
 FText UXD_EventFlowSequenceBase::GetDescribe() const
 {
-	return DescribeDelegate.IsBound() ? DescribeDelegate.Execute() : Describe;
+	return DescribeDelegate.IsBound() ? DescribeDelegate.Execute() : SequenceTemplate ? SequenceTemplate->Describe : Describe;
+}
+
+bool UXD_EventFlowSequenceBase::IsFinished() const
+{
+	return OwingEventFlow ? OwingEventFlow->GetUnderwayEventFlowSequence() != this : false;
 }
 
 void UXD_EventFlowSequenceBase::OnRep_EventFlowElementList()
@@ -241,7 +248,6 @@ void UEventFlowSequence_Branch::GetLifetimeReplicatedProps(TArray<class FLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UEventFlowSequence_Branch, EventFlowElementFinishList);
-
 }
 
 void UEventFlowSequence_Branch::ReplicatedEventFlowElement(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags)
@@ -345,8 +351,9 @@ UEventFlowSequence_Branch* UEventFlowSequence_Branch::GetDuplicatedNode(UObject*
 	UEventFlowSequence_Branch* Branch = CastChecked<UEventFlowSequence_Branch>(Super::GetDuplicatedNode(Outer));
 	for (int32 Idx = 0; Idx < EventFlowElementFinishList.Num(); ++Idx)
 	{
-		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ClearFlags(RF_ArchetypeObject | RF_DefaultSubObject | RF_WasLoaded);
-		Branch->EventFlowElementFinishList[Idx].EventFlowElement->ElementTemplate = Branch->EventFlowElementFinishList[Idx].EventFlowElement;
+		UXD_EventFlowElementBase*& Element = Branch->EventFlowElementFinishList[Idx].EventFlowElement;
+		Element->ClearFlags(RF_Load);
+		Element->ElementTemplate = EventFlowElementFinishList[Idx].EventFlowElement;
 	}
 	Branch->OnRep_EventFlowElementFinishList();
 	return Branch;
@@ -411,10 +418,9 @@ void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowEle
 {
 	if (IsEveryMustEventFlowElementFinished())
 	{
-		NextSequenceTemplate = Cast<UEventFlowSequence_List>(SequenceTemplate)->NextSequenceTemplate;
-		if (NextSequenceTemplate)
+		if (UXD_EventFlowSequenceBase* NextSequence = Cast<UEventFlowSequence_List>(SequenceTemplate)->NextSequenceTemplate)
 		{
-			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequenceTemplate->GetSequenceInstance(OwingEventFlow));
+			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequence->GetSequenceInstance(OwingEventFlow));
 		}
 		else
 		{

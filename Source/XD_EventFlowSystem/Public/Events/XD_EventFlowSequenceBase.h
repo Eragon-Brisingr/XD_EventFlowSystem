@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏性|游戏事件")
 	FText GetDescribe() const;
 
+	UFUNCTION(BlueprintCallable, Category = "游戏性|游戏事件")
+	bool IsFinished() const;
+
 	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
 	TArray<UXD_EventFlowElementBase*> EventFlowElementList;
 	UFUNCTION()
@@ -166,7 +169,7 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowSequence_List : public UXD_EventFlowSeque
 public:
 	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
 public:
- 	UPROPERTY(SaveGame)
+ 	UPROPERTY()
  	UXD_EventFlowSequenceBase* NextSequenceTemplate;
 };
 

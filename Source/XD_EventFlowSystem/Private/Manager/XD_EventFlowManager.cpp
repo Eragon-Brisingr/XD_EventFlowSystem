@@ -89,7 +89,7 @@ void UXD_EventFlowManager::OnRep_UnderwayEventFlowList()
 		if (AddEventFlow)
 		{
 			AddEventFlow->EventFlowOwner = this;
-			OnAcceptEventFlow.Broadcast(AddEventFlow);
+			OnEventFlowActived.Broadcast(AddEventFlow);
 		}
 	}
 
@@ -100,7 +100,7 @@ void UXD_EventFlowManager::OnRep_UnderwayEventFlowList()
 			if (RemoveEventFlow)
 			{
 				RemoveEventFlow->WhenFinishEventFlow();
-				OnRemoveUnderwayEventFlow.Broadcast(RemoveEventFlow);
+				OnUnderwayEventFlowRemoved.Broadcast(RemoveEventFlow);
 			}
 		}
 	}
@@ -109,24 +109,24 @@ void UXD_EventFlowManager::OnRep_UnderwayEventFlowList()
 
 void UXD_EventFlowManager::OnRep_FinishEventFlowList()
 {
-	if (OnFinishEventFlow.IsBound())
+	if (OnEventFlowFinished.IsBound())
 	{
 		for (auto FinishEventFlow : TSet<UXD_EventFlowBase*>(FinishEventFlowList).Difference(TSet<UXD_EventFlowBase*>(PreFinishEventFlowList)))
 		{
 			if (FinishEventFlow)
 			{
 				FinishEventFlow->EventFlowOwner = this;
-				OnFinishEventFlow.Broadcast(FinishEventFlow);
+				OnEventFlowFinished.Broadcast(FinishEventFlow);
 			}
 		}
 	}
-	if (OnRemoveFinishEventFlow.IsBound())
+	if (OnFinishEventFlowRemoved.IsBound())
 	{
 		for (auto RemoveEventFlow : TSet<UXD_EventFlowBase*>(PreFinishEventFlowList).Difference(TSet<UXD_EventFlowBase*>(FinishEventFlowList)))
 		{
 			if (RemoveEventFlow)
 			{
-				OnRemoveFinishEventFlow.Broadcast(RemoveEventFlow);
+				OnFinishEventFlowRemoved.Broadcast(RemoveEventFlow);
 			}
 		}
 	}

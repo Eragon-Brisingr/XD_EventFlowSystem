@@ -26,6 +26,7 @@ public class XD_EventFlowSystem : ModuleRules
 			new string[]
 			{
 				"Core",
+                "UMG",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -38,7 +39,6 @@ public class XD_EventFlowSystem : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "UMG",
 
                 "XD_UnrealLibraryEx",
                 "XD_SaveGameSystem",

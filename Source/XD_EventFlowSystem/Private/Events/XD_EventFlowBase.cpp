@@ -90,15 +90,16 @@ void UXD_EventFlowBase::OnRep_CurrentEventFlowSequenceList()
 			{
 				AddedEventFlowSequence->OwingEventFlow = this;
 				AddedEventFlowSequence->TryBindRefAndDelegate(this);
+
+				int32 Index = CurrentEventFlowSequenceList.IndexOfByKey(AddedEventFlowSequence);
+				if (Index > 1)
+				{
+					WhenFinishedEventFlowSequence(CurrentEventFlowSequenceList[Index - 2], CurrentEventFlowSequenceList[Index]);
+				}
 			}
 		}
 
 		GeneratedClass->BindDynamicDelegates(GetClass(), this);
-
-		if (CurrentEventFlowSequenceList.Num() > 1)
-		{
-			WhenFinishedEventFlowSequence(CurrentEventFlowSequenceList[CurrentEventFlowSequenceList.Num() - 2], GetUnderwayEventFlowSequence());
-		}
 
 		PreEventFlowSequenceList = CurrentEventFlowSequenceList;
 	}
@@ -117,7 +118,6 @@ void UXD_EventFlowBase::SetAndActiveNextEventFlowSequence(class UXD_EventFlowSeq
 	{
 		FinishEventFlowSucceed();
 	}
-	WhenFinishedEventFlowSequence(FinishEventFlowSequence, NextEventFlowSequence);
 }
 
 class APawn* UXD_EventFlowBase::GetEventFlowOwnerCharacter() const
@@ -189,7 +189,7 @@ void UXD_EventFlowBase::FinishEventFlowFailed()
 
 void UXD_EventFlowBase::WhenFinishedEventFlowSequence_Implementation(class UXD_EventFlowSequenceBase* FinishedEventFlowSequence, class UXD_EventFlowSequenceBase* UnderwayEventFlowSequences)
 {
-	EventFlowOwner->OnFinishedEventFlowSequence.Broadcast(this, FinishedEventFlowSequence, UnderwayEventFlowSequences);
+	EventFlowOwner->OnEventFlowSequenceFinished.Broadcast(this, FinishedEventFlowSequence, UnderwayEventFlowSequences);
 }
 
 void UXD_EventFlowBase::AddNextSequence(class UXD_EventFlowSequenceBase* NextEventFlowSequence)

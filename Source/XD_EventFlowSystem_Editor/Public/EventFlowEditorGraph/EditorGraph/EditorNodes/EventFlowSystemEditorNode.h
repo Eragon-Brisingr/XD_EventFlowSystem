@@ -74,7 +74,7 @@ public:
 	T* DuplicatedBpNode(UObject* Outer) const
 	{
 		T* InstanceNode = CastChecked<T>(StaticDuplicateObject(EventFlowBpNode, Outer, *EventFlowBpNode->GetName(), RF_Transactional));
-		InstanceNode->SetFlags(RF_Public | RF_ArchetypeObject);
+		InstanceNode->SetFlags(RF_Public | RF_DefaultSubObject);
 		return InstanceNode;
 	}
 public:

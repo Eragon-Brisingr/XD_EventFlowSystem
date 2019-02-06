@@ -33,9 +33,9 @@ void UXD_EventFlowElementBase::GetLifetimeReplicatedProps(TArray<class FLifetime
 	}
 
 	DOREPLIFETIME(UXD_EventFlowElementBase, bIsFinished);
-	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, bIsMust, COND_InitialOnly);
-	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, bIsShowEventFlowElement, COND_InitialOnly);
-	DOREPLIFETIME_CONDITION(UXD_EventFlowElementBase, ElementTemplate, COND_InitialOnly);
+	DOREPLIFETIME(UXD_EventFlowElementBase, bIsMust);
+	DOREPLIFETIME(UXD_EventFlowElementBase, bIsShowEventFlowElement);
+	DOREPLIFETIME(UXD_EventFlowElementBase, ElementTemplate);
 }
 
 FString UXD_EventFlowElementBase::GetVarRefName() const
@@ -88,7 +88,7 @@ void UXD_EventFlowElementBase::FinishEventFlowElement(const FName& NextBranchTag
 	if (bIsFinished == false)
 	{
 		bIsFinished = true;
-		EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s中的游戏事件元素%s", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this));
+		EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s中的游戏事件元素%s，[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this), *GetDescribe().ToString());
 		OwingEventFlowSequence->InvokeFinishEventFlowSequence(this, NextBranchTag);
 	}
 }
@@ -111,7 +111,7 @@ void UXD_EventFlowElementBase::ActivateEventFlowElement()
 	check(bIsActive == false);
 	bIsActive = true;
 #endif
-	EventFlowSystem_Display_Log("%s激活[%s]游戏事件序列%s中的%s", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this));
+	EventFlowSystem_Display_Log("%s激活[%s]游戏事件序列%s中的%s，[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this), *GetDescribe().ToString());
 	WhenActivateEventFlowElement(GetOwningCharacter(), GetOwingController());
 	OnElementActived.Broadcast(this);
 }
@@ -122,6 +122,7 @@ void UXD_EventFlowElementBase::DeactiveEventFlowElement()
 	check(bIsActive);
 	bIsActive = false;
 #endif
+	EventFlowSystem_Display_Log("%s停止激活[%s]游戏事件序列%s中的%s，[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *OwingEventFlowSequence->OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this), *GetDescribe().ToString());
 	WhenDeactiveEventFlowElement(GetOwningCharacter(), GetOwingController());
 	OnElementDeactived.Broadcast(this);
 }
@@ -139,6 +140,11 @@ class APawn* UXD_EventFlowElementBase::GetOwningCharacter() const
 class UXD_EventFlowBase* UXD_EventFlowElementBase::GetEventFlow() const
 {
 	return OwingEventFlowSequence ? OwingEventFlowSequence->OwingEventFlow : nullptr;
+}
+
+FText UElement_Debug::ReceiveGetDescribe_Implementation() const
+{
+	return LOCTEXT("调试用元素", "调试用元素");
 }
 
 void UElement_Debug::WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner)

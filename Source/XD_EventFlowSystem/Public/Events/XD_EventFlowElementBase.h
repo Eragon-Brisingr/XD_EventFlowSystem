@@ -24,6 +24,8 @@ public:
 
 	void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void ReplicatedElementSubobject(bool& WroteSomething, class UActorChannel * Channel, class FOutBunch * Bunch, FReplicationFlags * RepFlags) {}
+
 	FString GetVarRefName() const override;
 
 	UXD_EventFlowElementBase* GetDuplicatedNode(UObject* Outer) const override;
@@ -123,6 +125,8 @@ public:
 	float FinishTime = 1.f;
 
 	FTimerHandle TimerHandle;
+
+	FText ReceiveGetDescribe_Implementation() const override;
 
 	void WhenActivateEventFlowElement_Implementation(class APawn* EventFlowOwnerCharacter, class AController* EventFlowOwner) override;
 
