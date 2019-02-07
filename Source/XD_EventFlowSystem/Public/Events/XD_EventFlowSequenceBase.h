@@ -26,7 +26,7 @@ public:
 
 	FString GetVarRefName() const override;
 
-	UXD_EventFlowSequenceBase* GetDuplicatedNode(UObject* Outer) const override;
+	UXD_EventFlowSequenceBase* CreateInstanceByTemplate(UObject* Outer) const override;
 public:
 	void AddEventFlowElement(UXD_EventFlowElementBase* EventFlowElement);
 
@@ -44,7 +44,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏性|游戏事件")
 	bool IsFinished() const;
 
-	UPROPERTY(BlueprintReadOnly, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
+	UPROPERTY(VisibleAnywhere, Instanced, BlueprintReadOnly, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
 	TArray<UXD_EventFlowElementBase*> EventFlowElementList;
 	UFUNCTION()
 	void OnRep_EventFlowElementList();
@@ -65,8 +65,6 @@ public:
 	void DeactiveEventFlowSequence();
 	void InitEventFlowSequence();
 	void FinishEventFlowSequence();
-
-	UXD_EventFlowSequenceBase* GetSequenceInstance(UObject* Outer) const;
 
 	bool HasMustEventFlowElement();
 
@@ -147,7 +145,7 @@ public:
 
 	void DrawHintInWorld(class AHUD* ARPG_HUD, int32 Index, bool IsFinishBranch) override;
 
-	UEventFlowSequence_Branch* GetDuplicatedNode(UObject* Outer) const override;
+	UEventFlowSequence_Branch* CreateInstanceByTemplate(UObject* Outer) const override;
 
 	void TryBindRefAndDelegate(UXD_EventFlowBase* EventFlow) override;
 public:

@@ -36,7 +36,7 @@ public:
 	EEventFlowCompileMessageType GetCompileMessage(FString& Message) const;
 	virtual EEventFlowCompileMessageType GetCompileMessage_Implementation(FString& Message) const { return EEventFlowCompileMessageType::None; }
 
-	virtual UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const;
+	virtual UEventFlowGraphNodeBase* CreateInstanceByTemplate(UObject* Outer) const;
 public:
 	UPROPERTY(SaveGame)
 	uint8 bIsVariable : 1;

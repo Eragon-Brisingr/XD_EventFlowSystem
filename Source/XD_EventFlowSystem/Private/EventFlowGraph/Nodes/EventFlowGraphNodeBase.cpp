@@ -20,9 +20,9 @@ FText UEventFlowGraphNodeBase::GetNodeTitle_Implementation()
 #endif
 }
 
-UEventFlowGraphNodeBase* UEventFlowGraphNodeBase::GetDuplicatedNode(UObject* Outer) const
+UEventFlowGraphNodeBase* UEventFlowGraphNodeBase::CreateInstanceByTemplate(UObject* Outer) const
 {
-	return UXD_ObjectFunctionLibrary::DuplicateObject(this, Outer, GetFName());
+	return NewObject<UEventFlowGraphNodeBase>(Outer, GetClass(), GetFName(), RF_NoFlags, (UObject*)this);
 }
 
 FString UEventFlowGraphNodeBase::GetVarRefName() const

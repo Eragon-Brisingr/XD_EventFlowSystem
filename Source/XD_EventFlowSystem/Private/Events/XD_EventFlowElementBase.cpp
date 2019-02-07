@@ -50,9 +50,9 @@ FString UXD_EventFlowElementBase::GetVarRefName() const
 	}
 }
 
-UXD_EventFlowElementBase* UXD_EventFlowElementBase::GetDuplicatedNode(UObject* Outer) const
+UXD_EventFlowElementBase* UXD_EventFlowElementBase::CreateInstanceByTemplate(UObject* Outer) const
 {
-	UXD_EventFlowElementBase* Element = CastChecked<UXD_EventFlowElementBase>(Super::GetDuplicatedNode(Outer));
+	UXD_EventFlowElementBase* Element = CastChecked<UXD_EventFlowElementBase>(Super::CreateInstanceByTemplate(Outer));
 	Element->ElementTemplate = this;
 	return Element;
 }
@@ -75,7 +75,7 @@ void UXD_EventFlowElementBase::TryBindRefAndDelegate(UXD_EventFlowBase* EventFlo
 
 FText UXD_EventFlowElementBase::GetDescribe()
 {
-	return bIsMust ? ReceiveGetDescribe() : FText::Format(LOCTEXT("EventFlowElementFormat", "{0} (可选)"), ReceiveGetDescribe());
+	return FText::Format(LOCTEXT("EventFlowElementFormat", "{0} {1}   {2}"), ReceiveGetDescribe(), bIsMust ? FText::GetEmpty() : LOCTEXT("可选描述", "(可选)"), bIsFinished ? LOCTEXT("元素完成描述", "完成") : LOCTEXT("元素未完成描述", "未完成"));
 }
 
 FText UXD_EventFlowElementBase::ReceiveGetDescribe_Implementation() const

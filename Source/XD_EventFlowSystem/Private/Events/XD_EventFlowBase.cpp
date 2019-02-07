@@ -147,7 +147,7 @@ void UXD_EventFlowBase::ActiveEventFlow(class UXD_EventFlowManager* EventFlowExe
 			EventFlowOwner = EventFlowExecuter;
 			EventFlowState = EEventFlowState::Underway;
 
-			UXD_EventFlowSequenceBase* Instance = GeneratedClass->StartSequence->GetSequenceInstance(this);
+			UXD_EventFlowSequenceBase* Instance = GeneratedClass->StartSequence->CreateInstanceByTemplate(this);
 			AddNextSequence(Instance);
 		}
 		else

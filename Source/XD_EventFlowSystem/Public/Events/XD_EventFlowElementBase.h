@@ -28,7 +28,7 @@ public:
 
 	FString GetVarRefName() const override;
 
-	UXD_EventFlowElementBase* GetDuplicatedNode(UObject* Outer) const override;
+	UXD_EventFlowElementBase* CreateInstanceByTemplate(UObject* Outer) const override;
 
 	UPROPERTY(SaveGame, ReplicatedUsing = OnRep_ElementTemplate)
 	const UXD_EventFlowElementBase* ElementTemplate;

@@ -55,16 +55,14 @@ FString UXD_EventFlowSequenceBase::GetVarRefName() const
 	}
 }
 
-UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetDuplicatedNode(UObject* Outer) const
+UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::CreateInstanceByTemplate(UObject* Outer) const
 {
-	UXD_EventFlowSequenceBase* Sequence = CastChecked<UXD_EventFlowSequenceBase>(Super::GetDuplicatedNode(Outer));
+	UXD_EventFlowSequenceBase* Sequence = CastChecked<UXD_EventFlowSequenceBase>(Super::CreateInstanceByTemplate(Outer));
 	Sequence->OwingEventFlow = Cast<UXD_EventFlowBase>(Outer);
 	Sequence->SequenceTemplate = this;
 	for (int32 Idx = 0; Idx < EventFlowElementList.Num(); ++Idx)
 	{
-		UXD_EventFlowElementBase*& Element = Sequence->EventFlowElementList[Idx];
-		Element->ClearFlags(RF_Load);
-		Element->ElementTemplate = EventFlowElementList[Idx];
+		Sequence->EventFlowElementList[Idx] = EventFlowElementList[Idx]->CreateInstanceByTemplate(Sequence);
 	}
 	Sequence->OnRep_EventFlowElementList();
 	return Sequence;
@@ -133,11 +131,6 @@ void UXD_EventFlowSequenceBase::FinishEventFlowSequence()
 {
 	EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s", *UXD_DebugFunctionLibrary::GetDebugName(GetEventFlowOwnerCharacter()), *OwingEventFlow->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(this));
 	OnSequenceFinished.Broadcast(this);
-}
-
-UXD_EventFlowSequenceBase* UXD_EventFlowSequenceBase::GetSequenceInstance(UObject* Outer) const
-{
-	return GetDuplicatedNode(Outer);
 }
 
 bool UXD_EventFlowSequenceBase::HasMustEventFlowElement()
@@ -309,7 +302,7 @@ void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowE
 				{
 					if (NextSequenceTemplate)
 					{
-						OwingEventFlow->SetAndActiveNextEventFlowSequence((*NextSequenceTemplate)->GetSequenceInstance(OwingEventFlow));
+						OwingEventFlow->SetAndActiveNextEventFlowSequence((*NextSequenceTemplate)->CreateInstanceByTemplate(OwingEventFlow));
 					}
 					else
 					{
@@ -346,14 +339,12 @@ void UEventFlowSequence_Branch::DrawHintInWorld(class AHUD* ARPG_HUD, int32 Inde
 	}
 }
 
-UEventFlowSequence_Branch* UEventFlowSequence_Branch::GetDuplicatedNode(UObject* Outer) const
+UEventFlowSequence_Branch* UEventFlowSequence_Branch::CreateInstanceByTemplate(UObject* Outer) const
 {
-	UEventFlowSequence_Branch* Branch = CastChecked<UEventFlowSequence_Branch>(Super::GetDuplicatedNode(Outer));
+	UEventFlowSequence_Branch* Branch = CastChecked<UEventFlowSequence_Branch>(Super::CreateInstanceByTemplate(Outer));
 	for (int32 Idx = 0; Idx < EventFlowElementFinishList.Num(); ++Idx)
 	{
-		UXD_EventFlowElementBase*& Element = Branch->EventFlowElementFinishList[Idx].EventFlowElement;
-		Element->ClearFlags(RF_Load);
-		Element->ElementTemplate = EventFlowElementFinishList[Idx].EventFlowElement;
+		Branch->EventFlowElementFinishList[Idx].EventFlowElement = EventFlowElementFinishList[Idx].EventFlowElement->CreateInstanceByTemplate(Branch);
 	}
 	Branch->OnRep_EventFlowElementFinishList();
 	return Branch;
@@ -420,7 +411,7 @@ void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowEle
 	{
 		if (UXD_EventFlowSequenceBase* NextSequence = Cast<UEventFlowSequence_List>(SequenceTemplate)->NextSequenceTemplate)
 		{
-			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequence->GetSequenceInstance(OwingEventFlow));
+			OwingEventFlow->SetAndActiveNextEventFlowSequence(NextSequence->CreateInstanceByTemplate(OwingEventFlow));
 		}
 		else
 		{
