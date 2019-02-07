@@ -77,6 +77,20 @@ bool UEventFlowSystemEditorNodeBase::HasInputPins()
 	return true;
 }
 
+void UEventFlowSystemEditorNodeBase::CheckBpNodeCompileMessage(FCompilerResultsLog &MessageLog) const
+{
+	FString CompileMessage;
+	switch (EventFlowBpNode->GetCompileMessage(CompileMessage))
+	{
+	case EEventFlowCompileMessageType::Warning:
+		MessageLog.Warning(TEXT("@@ @@"), this, *CompileMessage);
+		break;
+	case EEventFlowCompileMessageType::Error:
+		MessageLog.Error(TEXT("@@ @@"), this, *CompileMessage);
+		break;
+	}
+}
+
 void UEventFlowSystemEditorNodeBase::MarkOwingBlueprintDirty()
 {
 	GetEventFlowGraph()->GetBlueprint()->Status = EBlueprintStatus::BS_Dirty;
@@ -380,7 +394,9 @@ UXD_EventFlowSequenceBase* UEventSequenceEdNodeBase::BuildSequenceTreeImpl(UEven
 		{
 			if (ElementEdNode->EventFlowBpNode)
 			{
-				Sequence->EventFlowElementList.Add(ElementEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence));
+				ElementEdNode->CheckBpNodeCompileMessage(MessageLog);
+				UXD_EventFlowElementBase* AddElement = ElementEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Sequence);
+				Sequence->EventFlowElementList.Add(AddElement);
 			}
 			else
 			{
@@ -461,9 +477,9 @@ UXD_EventFlowSequenceBase* UEventSequenceListEdNode::BuildSequenceTreeImpl(UEven
 {
 	if (UEventFlowSequence_List* List = Cast<UEventFlowSequence_List>(Super::BuildSequenceTreeImpl(Outer, MessageLog)))
 	{
-		if (EventElements.Num() == 0)
+		if (!List->EventFlowElementList.ContainsByPredicate([](UXD_EventFlowElementBase* E) {return E->bIsMust; }))
 		{
-			MessageLog.Error(TEXT("@@ 至少需要存在一个任务元素"), this);
+			MessageLog.Error(TEXT("@@ 至少需要存在一个必要任务元素"), this);
 		}
 		for (UEventSequenceEdNodeBase* NextSequenceEdNode : GetChildNodes<UEventSequenceEdNodeBase>())
 		{
@@ -545,6 +561,7 @@ UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTreeImpl(UEv
 			if (BranchEdNode->EventFlowBpNode)
 			{
 				FEventFlowElementFinishWrapper FinishWarpper;
+				BranchEdNode->CheckBpNodeCompileMessage(MessageLog);
 				FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Branch);
 				for (UEventSequenceEdNodeBase* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
 				{

@@ -95,6 +95,8 @@ protected:
 	virtual bool HasInputPins();
 	TSharedPtr<SGraphNode> SlateNode;
 public:
+	void CheckBpNodeCompileMessage(FCompilerResultsLog &MessageLog) const;
+
 	void MarkOwingBlueprintDirty();
 	UPROPERTY(Instanced)
 	UEventFlowGraphNodeBase* EventFlowBpNode = nullptr;

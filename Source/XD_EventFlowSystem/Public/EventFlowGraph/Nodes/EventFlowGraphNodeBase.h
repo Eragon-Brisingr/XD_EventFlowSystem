@@ -12,7 +12,15 @@ class UXD_EventFlowBase;
 /**
  * Base abstract class for every node of the graph.
  */
-UCLASS(Blueprintable, BlueprintType)
+UENUM()
+enum class EEventFlowCompileMessageType : uint8
+{
+	None,
+	Error,
+	Warning
+};
+
+UCLASS(abstract)
 class XD_EVENTFLOWSYSTEM_API UEventFlowGraphNodeBase : public UObject
 {
 	GENERATED_BODY()
@@ -23,6 +31,10 @@ public:
     UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Node Data")
 	FText GetNodeTitle();
     virtual FText GetNodeTitle_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent, BlueprintPure, Category = "Node Data")
+	EEventFlowCompileMessageType GetCompileMessage(FString& Message) const;
+	virtual EEventFlowCompileMessageType GetCompileMessage_Implementation(FString& Message) const { return EEventFlowCompileMessageType::None; }
 
 	virtual UEventFlowGraphNodeBase* GetDuplicatedNode(UObject* Outer) const;
 public:
