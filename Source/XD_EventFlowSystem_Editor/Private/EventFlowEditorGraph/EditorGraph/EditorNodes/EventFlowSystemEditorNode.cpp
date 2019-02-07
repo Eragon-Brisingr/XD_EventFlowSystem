@@ -279,29 +279,25 @@ void UEventSequenceEdNodeBase::GetContextMenuActions(const FGraphNodeContextMenu
 			{
 				FGraphContextMenuBuilder ContextMenuBuilder(GraphObj);
 
-				FCategorizedGraphActionListBuilder BaseBuilder(TEXT("事件元素"));
-
 				FXD_EventFlowSystem_EditorModule& Module = FModuleManager::LoadModuleChecked<FXD_EventFlowSystem_EditorModule>("XD_EventFlowSystem_Editor");
 				TSharedPtr<FEventFlowSystem_Editor_ClassHelper> Helper = Module.GetHelper();
 				TArray<FEventFlowSystem_Editor_ClassData> AllSubClasses;
 				Helper->GatherClasses(UXD_EventFlowElementBase::StaticClass(), AllSubClasses);
 
-				FText ToolTip = LOCTEXT("NewEditorGraphNodeTooltip", "Add a {NodeName} to the graph.");
-				FText MenuDesc = LOCTEXT("NewEditorGraphNodeDescription", "{NodeName}");
+				FText ToolTip = LOCTEXT("NewEditorSequenceElementTooltip", "向序列添加元素 {NodeName}");
+				FText MenuDesc = LOCTEXT("NewEditorSequenceElementDescription", "{NodeName}");
 				for (auto& ClassData : AllSubClasses)
 				{
 					if (!ClassData.GetClass()->HasAnyClassFlags(CLASS_Abstract))
 					{
 						FFormatNamedArguments Arguments;
 						Arguments.Add(TEXT("NodeName"), ClassData.GetClass()->GetDisplayNameText());
-						TSharedPtr<FNewElement_SchemaAction> NewNodeAction = MakeShareable(new FNewElement_SchemaAction(ClassData.GetCategory(), FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, CastChecked<UEventSequenceEdNodeBase>(GraphNode), ClassData.GetClass()));
+						FText Category = ClassData.GetCategory();
+						TSharedPtr<FNewElement_SchemaAction> NewNodeAction = MakeShareable(new FNewElement_SchemaAction(Category.IsEmpty() ? LOCTEXT("事件元素其他分类", "其他") : Category, FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, CastChecked<UEventSequenceEdNodeBase>(GraphNode), ClassData.GetClass()));
 
-						BaseBuilder.AddAction(NewNodeAction);
+						ContextMenuBuilder.AddAction(NewNodeAction);
 					}
 				}
-
-				ContextMenuBuilder.Append(BaseBuilder);
-
 				OutAllActions.Append(ContextMenuBuilder);
 			}
 		};
