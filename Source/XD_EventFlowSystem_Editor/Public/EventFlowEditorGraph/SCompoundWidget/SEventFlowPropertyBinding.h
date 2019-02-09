@@ -42,7 +42,11 @@ public:
 
 	void GotoFunction(UEdGraph* FunctionGraph);
 
+	void HandleAddFunctionBinding(TSharedRef<IPropertyHandle> PropertyHandle, TSharedPtr<FFunctionInfo> SelectedFunction, TArray<UField*> BindingChain);
 private:
+	template <typename Predicate>
+	void ForEachBindableFunction(UClass* FromClass, Predicate Pred) const;
+
 	FEventFlowSystemEditor* Editor;
 
 	bool GeneratePureBindings = true;

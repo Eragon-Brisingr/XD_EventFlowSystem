@@ -13,6 +13,7 @@
 #include <PropertyEditorModule.h>
 #include <IDetailCustomization.h>
 #include <DetailLayoutBuilder.h>
+#include "SEventFlowPropertyBinding.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 
@@ -277,11 +278,11 @@ void SEventFlowSystemGraphNode::CreateContent()
 		DetailsViewArgs.bAllowSearch = false;
 		DetailsViewArgs.bLockable = false;
 		DetailsViewArgs.NameAreaSettings = FDetailsViewArgs::HideNameArea;
-		DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Hide;
+		DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Show;
 
 		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		TSharedRef<IDetailsView> PropertyView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
-		//PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Editor.Pin().Get())));
+		PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Node->GetEventFlowGraph()->OwingEditor)));
 		PropertyView->OnFinishedChangingProperties().AddLambda([=](const FPropertyChangedEvent&) { Node->MarkOwingBlueprintDirty(); });
 		class FEventFlowContentWidgetDetailCustomization : public IDetailCustomization
 		{

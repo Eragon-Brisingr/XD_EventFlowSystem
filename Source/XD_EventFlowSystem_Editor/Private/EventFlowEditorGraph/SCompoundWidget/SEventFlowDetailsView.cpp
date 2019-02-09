@@ -32,7 +32,7 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 		/*InNotifyHook=*/ NotifyHook,
 		/*InSearchInitialKeyFocus=*/ false,
 		/*InViewIdentifier=*/ NAME_None);
-	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Automatic;
+	DetailsViewArgs.DefaultsOnlyVisibility = EEditDefaultsOnlyNodeVisibility::Show;
 
 	PropertyView = EditModule.CreateDetailView(DetailsViewArgs);
 

@@ -44,7 +44,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏性|游戏事件")
 	bool IsFinished() const;
 
-	UPROPERTY(VisibleAnywhere, Instanced, BlueprintReadOnly, Category = "游戏性|游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
+	UPROPERTY(Instanced, BlueprintReadOnly, Category = "游戏事件", ReplicatedUsing = OnRep_EventFlowElementList, SaveGame)
 	TArray<UXD_EventFlowElementBase*> EventFlowElementList;
 	UFUNCTION()
 	void OnRep_EventFlowElementList();

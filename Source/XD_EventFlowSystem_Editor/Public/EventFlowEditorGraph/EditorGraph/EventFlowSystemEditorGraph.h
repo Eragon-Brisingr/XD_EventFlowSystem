@@ -17,6 +17,7 @@ class UXD_EventFlowSequenceBase;
 class UEventFlowGraphBlueprintGeneratedClass;
 class UEventElementEdNode;
 class UEventFlowSystemEditorNodeBase;
+class FEventFlowSystemEditor;
 
 UCLASS()
 class UEventFlowSystemEditorGraph : public UEdGraph
@@ -43,4 +44,6 @@ public:
 	TArray<UEventFlowSystemEditorNodeBase*> GetAllNodes() const;
 
 	TArray<UEventFlowSystemEditorNodeBase*> GetAllRootLinkedNodes() const;
+
+	FEventFlowSystemEditor* OwingEditor;
 };

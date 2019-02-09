@@ -57,7 +57,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "角色|游戏事件")
 	FText GetEventFlowName() const;
 public:
-	UPROPERTY(BlueprintReadOnly, Category = "游戏事件", ReplicatedUsing = OnRep_CurrentEventFlowSequenceList, SaveGame)
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "游戏事件", ReplicatedUsing = OnRep_CurrentEventFlowSequenceList, SaveGame)
 	TArray<UXD_EventFlowSequenceBase*> CurrentEventFlowSequenceList;
 	UFUNCTION()
 	void OnRep_CurrentEventFlowSequenceList();

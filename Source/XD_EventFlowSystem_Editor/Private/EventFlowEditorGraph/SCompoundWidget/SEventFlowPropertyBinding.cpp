@@ -101,6 +101,39 @@ TSharedRef<SWidget> SEventFlowPropertyBinding::OnGenerateDelegateMenu(UObject* O
 	}
 	MenuBuilder.EndSection(); //CreateBinding
 
+	if (UClass* OwnerClass = Editor->GetBlueprintObj()->GeneratedClass)
+	{
+		TArray<UField*> BindingChain;
+		bool bFoundEntry = false;
+
+		static FName FunctionIcon(TEXT("GraphEditor.Function_16x"));
+
+		MenuBuilder.BeginSection("Functions", LOCTEXT("Functions", "Functions"));
+		{
+			ForEachBindableFunction(OwnerClass, [&](TSharedPtr<FFunctionInfo> Info) {
+				TArray<UField*> NewBindingChain(BindingChain);
+				NewBindingChain.Add(Info->Function);
+
+				bFoundEntry = true;
+
+				MenuBuilder.AddMenuEntry(
+					Info->DisplayName,
+					FText::FromString(Info->Tooltip),
+					FSlateIcon(FEditorStyle::GetStyleSetName(), FunctionIcon),
+					FUIAction(FExecuteAction::CreateSP(this, &SEventFlowPropertyBinding::HandleAddFunctionBinding, PropertyHandle, Info, NewBindingChain))
+				);
+			});
+		}
+		MenuBuilder.EndSection(); //Functions
+
+		if (bFoundEntry == false)
+		{
+			MenuBuilder.BeginSection("None", OwnerClass->GetDisplayNameText());
+			MenuBuilder.AddWidget(SNew(STextBlock).Text(LOCTEXT("None", "None")), FText::GetEmpty());
+			MenuBuilder.EndSection(); //None
+		}
+	}
+
 	FDisplayMetrics DisplayMetrics;
 	FSlateApplication::Get().GetCachedDisplayMetrics(DisplayMetrics);
 
@@ -285,9 +318,9 @@ void SEventFlowPropertyBinding::HandleRemoveBinding(TSharedRef<IPropertyHandle> 
 
 void SEventFlowPropertyBinding::HandleCreateAndAddBinding(UObject* Object, TSharedRef<IPropertyHandle> PropertyHandle)
 {
-	UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
-
 	const FScopedTransaction Transaction(LOCTEXT("CreateDelegate", "Create Binding"));
+
+	UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
 
 	Blueprint->Modify();
 
@@ -336,7 +369,81 @@ void SEventFlowPropertyBinding::GotoFunction(UEdGraph* FunctionGraph)
 	Editor->OpenDocument(FunctionGraph, FDocumentTracker::OpenNewDocument);
 }
 
-#undef LOCTEXT_NAMESPACE
+void SEventFlowPropertyBinding::HandleAddFunctionBinding(TSharedRef<IPropertyHandle> PropertyHandle, TSharedPtr<FFunctionInfo> SelectedFunction, TArray<UField*> BindingChain)
+{
+	const FScopedTransaction Transaction(LOCTEXT("BindDelegate", "Set Binding"));
+
+	UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
+	Blueprint->Modify();
+
+	TArray<UObject*> OuterObjects;
+	PropertyHandle->GetOuterObjects(OuterObjects);
+	for (UObject* SelectedObject : OuterObjects)
+	{
+		FEventFlowDelegateEditorBinding Binding;
+		Binding.Object = SelectedObject;
+		Binding.PropertyName = PropertyHandle->GetProperty()->GetFName();
+		Blueprint->Bindings.Add(Binding);
+
+		if (SelectedFunction->Function)
+		{
+			UBlueprint::GetGuidFromClassByFieldName<UFunction>(
+				SelectedFunction->Function->GetOwnerClass(),
+				SelectedFunction->Function->GetFName(),
+				Binding.MemberFunctionGuid);
+		}
+
+		Blueprint->Bindings.RemoveAll([&](const FEventFlowDelegateEditorBinding& E) {return E.Object == Binding.Object && E.PropertyName == Binding.PropertyName; });
+		Blueprint->Bindings.Add(Binding);
+	}
+
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
+}
+
+template <typename Predicate>
+void SEventFlowPropertyBinding::ForEachBindableFunction(UClass* FromClass, Predicate Pred) const
+{
+	const FSlateFontInfo DetailFontInfo = IDetailLayoutBuilder::GetDetailFont();
+
+	UEventFlowGraphBlueprint* Blueprint = Editor->GetEventFlowBlueprint();
+	UBlueprintGeneratedClass* SkeletonClass = Cast<UBlueprintGeneratedClass>(Blueprint->GeneratedClass);
+
+	// Walk up class hierarchy for native functions and properties
+	for (TFieldIterator<UFunction> FuncIt(FromClass, EFieldIteratorFlags::IncludeSuper); FuncIt; ++FuncIt)
+	{
+		UFunction* Function = *FuncIt;
+
+		// Only allow binding pure functions if we're limited to pure function bindings.
+		if (GeneratePureBindings && !Function->HasAnyFunctionFlags(FUNC_Const | FUNC_BlueprintPure))
+		{
+			continue;
+		}
+			
+		// C++中定义的函数跳过
+		if (Function->HasAnyFunctionFlags(FUNC_Native))
+		{
+			continue;
+		}
+
+		// Only bind to functions that are callable from blueprints
+		if (!UEdGraphSchema_K2::CanUserKismetCallFunction(Function))
+		{
+			continue;
+		}
+
+		// We ignore CPF_ReturnParm because all that matters for binding to script functions is that the number of out parameters match.
+		if (Function->IsSignatureCompatibleWith(BindableSignature, UFunction::GetDefaultIgnoredSignatureCompatibilityFlags() | CPF_ReturnParm))
+		{
+			TSharedPtr<FFunctionInfo> Info = MakeShareable(new FFunctionInfo());
+			Info->DisplayName = FText::FromName(Function->GetFName());
+			Info->Tooltip = Function->GetMetaData("Tooltip");
+			Info->FuncName = Function->GetFName();
+			Info->Function = Function;
+
+			Pred(Info);
+		}
+	}
+}
 
 bool FEventFlowDetailExtensionHandler::IsPropertyExtendable(const UClass* InObjectClass, const IPropertyHandle& InPropertyHandle) const
 {
@@ -384,3 +491,5 @@ TSharedRef<SWidget> FEventFlowDetailExtensionHandler::GenerateExtensionWidget(co
 
 	return SNew(SEventFlowPropertyBinding, BlueprintEditor, DelegateProperty, InPropertyHandle.ToSharedRef());
 }
+
+#undef LOCTEXT_NAMESPACE

@@ -38,7 +38,7 @@ public:
 	// End FBlueprintEditor
 
 public:
-	void InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* InBP);
+	void InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* EventFlowGraphBlueprint);
 	void BlueprintCompiled(class UBlueprint* Blueprint);
 
 	UEventFlowGraphBlueprint* GetEventFlowBlueprint() const;
