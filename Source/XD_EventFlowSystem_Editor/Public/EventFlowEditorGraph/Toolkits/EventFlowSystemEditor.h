@@ -43,5 +43,5 @@ public:
 
 	UEventFlowGraphBlueprint* GetEventFlowBlueprint() const;
 
-	UEventFlowSystemEditorGraph* GetEditorGraph() const;
+	UEventFlowSystemEditorGraph* GetEventFlowGraph() const;
 };

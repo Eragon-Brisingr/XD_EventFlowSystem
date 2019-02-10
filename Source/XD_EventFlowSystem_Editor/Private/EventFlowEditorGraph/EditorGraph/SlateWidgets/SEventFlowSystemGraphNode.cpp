@@ -282,7 +282,7 @@ void SEventFlowSystemGraphNode::CreateContent()
 
 		FPropertyEditorModule& PropertyEditorModule = FModuleManager::GetModuleChecked<FPropertyEditorModule>("PropertyEditor");
 		TSharedRef<IDetailsView> PropertyView = PropertyEditorModule.CreateDetailView(DetailsViewArgs);
-		PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Node->GetEventFlowGraph()->OwingEditor)));
+		PropertyView->SetExtensionHandler(MakeShareable(new FEventFlowDetailExtensionHandler(Node->GetEventFlowGraph()->OwningEditor)));
 		PropertyView->OnFinishedChangingProperties().AddLambda([=](const FPropertyChangedEvent&) { Node->MarkOwingBlueprintDirty(); });
 		class FEventFlowContentWidgetDetailCustomization : public IDetailCustomization
 		{

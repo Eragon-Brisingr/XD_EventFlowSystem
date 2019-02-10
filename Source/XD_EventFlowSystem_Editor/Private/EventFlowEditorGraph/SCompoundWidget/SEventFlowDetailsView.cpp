@@ -10,7 +10,6 @@
 #include "KismetEditorUtilities.h"
 #include "SWidgetSwitcher.h"
 #include "IDetailPropertyExtensionHandler.h"
-#include "SEventFlowPropertyBinding.h"
 #include "EventFlowSystemEditor.h"
 #include "EventFlowGraphBlueprint.h"
 
@@ -316,7 +315,7 @@ void SEventFlowDetailsView::HandleNameTextCommitted(const FText& Text, ETextComm
 				TMap<UEventFlowGraphNodeBase*, FString> NodeAndOldNames;
 				if (UXD_EventFlowSequenceBase* EventFlowSequence = Cast<UXD_EventFlowSequenceBase>(Node))
 				{
-					for (UEventElementEdNode* EventElement : EventFlowSystemEditor->GetEditorGraph()->EventElements)
+					for (UEventElementEdNode* EventElement : EventFlowSystemEditor->GetEventFlowGraph()->EventElements)
 					{
 						if (UXD_EventFlowElementBase* SubNode = Cast<UXD_EventFlowElementBase>(EventElement->EventFlowBpNode))
 						{
@@ -350,7 +349,7 @@ void SEventFlowDetailsView::HandleNameTextCommitted(const FText& Text, ETextComm
 					Binding->Object = Node;
 				}
 
-				Editor.Pin()->GetEditorGraph()->RefreshNodes();
+				Editor.Pin()->GetEventFlowGraph()->RefreshNodes();
 			}
 		}
 	}

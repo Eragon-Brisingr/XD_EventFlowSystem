@@ -25,9 +25,6 @@ class UEventFlowSystemEditorGraph : public UEdGraph
 	GENERATED_BODY()
 	
 public:
-	void BuildSubobjectMapping(UObject* OtherObject, TMap<UObject*, UObject*>& ObjectMapping) const;
-
-public:
 	void RefreshNodes();
 
 	UXD_EventFlowSequenceBase* BuildSequenceTreeInstance(UEventFlowGraphBlueprintGeneratedClass* Outer, FCompilerResultsLog& MessageLog) const;
@@ -45,5 +42,5 @@ public:
 
 	TArray<UEventFlowSystemEditorNodeBase*> GetAllRootLinkedNodes() const;
 
-	FEventFlowSystemEditor* OwingEditor;
+	FEventFlowSystemEditor* OwningEditor;
 };

@@ -31,8 +31,7 @@ FEventFlowSystemEditor::~FEventFlowSystemEditor()
 		EditorGraph_Blueprint->OnCompiled().RemoveAll(this);
 	}
 
-	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph);
-	EventFlowSystemEditorGraph->OwingEditor = nullptr;
+	GetEventFlowGraph()->OwningEditor = nullptr;
 }
 
 FLinearColor FEventFlowSystemEditor::GetWorldCentricTabColorScale() const
@@ -57,6 +56,9 @@ FString FEventFlowSystemEditor::GetWorldCentricTabPrefix() const
 
 void FEventFlowSystemEditor::InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* EventFlowGraphBlueprint)
 {
+	InitBlueprintEditor(InMode, InToolkitHost, { EventFlowGraphBlueprint }, true);
+	UpdatePreviewActor(GetBlueprintObj(), true);
+
 	if (EventFlowGraphBlueprint->EdGraph == nullptr)
 	{
 		EventFlowSystem_Log("Creating a new graph.");
@@ -68,12 +70,7 @@ void FEventFlowSystemEditor::InitEventFlowSystemGarphEditor(const EToolkitMode::
 		const UEdGraphSchema* Schema = EventFlowGraphBlueprint->EdGraph->GetSchema();
 		Schema->CreateDefaultNodesForGraph(*EventFlowGraphBlueprint->EdGraph);
 	}
-
-	UEventFlowSystemEditorGraph* EventFlowSystemEditorGraph = CastChecked<UEventFlowSystemEditorGraph>(EventFlowGraphBlueprint->EdGraph);
-	EventFlowSystemEditorGraph->OwingEditor = this;
-
-	InitBlueprintEditor(InMode, InToolkitHost, { EventFlowGraphBlueprint }, true);
-	UpdatePreviewActor(GetBlueprintObj(), true);
+	GetEventFlowGraph()->OwningEditor = this;
 
 	UEventFlowGraphBlueprint* EditorGraph_Blueprint = GetEventFlowBlueprint();
 	if (EditorGraph_Blueprint)
@@ -136,7 +133,7 @@ class UEventFlowGraphBlueprint* FEventFlowSystemEditor::GetEventFlowBlueprint() 
 	return Cast<UEventFlowGraphBlueprint>(GetBlueprintObj());
 }
 
-UEventFlowSystemEditorGraph* FEventFlowSystemEditor::GetEditorGraph() const
+UEventFlowSystemEditorGraph* FEventFlowSystemEditor::GetEventFlowGraph() const
 {
 	return Cast<UEventFlowSystemEditorGraph>(GetEventFlowBlueprint()->EdGraph);
 }
