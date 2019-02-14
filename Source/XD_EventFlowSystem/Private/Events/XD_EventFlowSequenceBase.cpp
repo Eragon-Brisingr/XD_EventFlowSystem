@@ -296,23 +296,9 @@ void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowE
 		if (Idx != INDEX_NONE)
 		{
 			const FEventFlowElementFinishWrapper& EventFlowElementFinishWarpper = CastChecked<UEventFlowSequence_Branch>(SequenceTemplate)->EventFlowElementFinishList[Idx];
-			if (EventFlowElementFinishWarpper.EventFlowFinishBranch.Num() > 0)
+			if (EventFlowElementFinishWarpper.NextSequenceTemplate)
 			{
-				if (UXD_EventFlowSequenceBase*const* NextSequenceTemplate = EventFlowElementFinishWarpper.EventFlowFinishBranch.Find(NextBranchTag))
-				{
-					if (NextSequenceTemplate)
-					{
-						OwingEventFlow->SetAndActiveNextEventFlowSequence((*NextSequenceTemplate)->CreateInstanceByTemplate(OwingEventFlow));
-					}
-					else
-					{
-						EventFlowSystem_Error_Log("事件流[%s]结束序列%s中标签为[%s]的分支模板失效", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
-					}
-				}
-				else
-				{
-					EventFlowSystem_Error_Log("事件流[%s]结束序列%s中未找到标签[%s]的分支", *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlow), *UXD_DebugFunctionLibrary::GetDebugName(this), *NextBranchTag.ToString());
-				}
+				OwingEventFlow->SetAndActiveNextEventFlowSequence(EventFlowElementFinishWarpper.NextSequenceTemplate->CreateInstanceByTemplate(OwingEventFlow));
 			}
 			else
 			{

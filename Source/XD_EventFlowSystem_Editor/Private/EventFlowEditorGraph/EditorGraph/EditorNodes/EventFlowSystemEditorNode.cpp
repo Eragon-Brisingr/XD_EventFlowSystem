@@ -561,8 +561,8 @@ UXD_EventFlowSequenceBase* UEventSequenceBranchEdNode::BuildSequenceTreeImpl(UEv
 				FinishWarpper.EventFlowElement = BranchEdNode->DuplicatedBpNode<UXD_EventFlowElementBase>(Branch);
 				for (UEventSequenceEdNodeBase* NextSequenceEdNode : BranchEdNode->GetChildNodes<UEventSequenceEdNodeBase>())
 				{
-					//TODO 根据边的Node设置Tag
-					FinishWarpper.EventFlowFinishBranch.Add(NAME_None, NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog));
+					FinishWarpper.NextSequenceTemplate = NextSequenceEdNode->BuildSequenceTree(Outer, MessageLog);
+					break;
 				}
 				Branch->EventFlowElementFinishList.Add(FinishWarpper);
 			}

@@ -57,11 +57,11 @@ void UEventFlowSystemEditorGraphSchema::GetContextMenuActions(const UEdGraph* Cu
 
 const FPinConnectionResponse UEventFlowSystemEditorGraphSchema::CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const
 {
-	const UEventFlowSystemEditorNodeBase* NodeA = CastChecked<const UEventFlowSystemEditorNodeBase>(A->GetOwningNode());
-	const UEventFlowSystemEditorNodeBase* NodeB = CastChecked<const UEventFlowSystemEditorNodeBase>(B->GetOwningNode());
-
 	if (!(A && B))
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("Both pins must be available."));
+
+	const UEventFlowSystemEditorNodeBase* NodeA = CastChecked<const UEventFlowSystemEditorNodeBase>(A->GetOwningNode());
+	const UEventFlowSystemEditorNodeBase* NodeB = CastChecked<const UEventFlowSystemEditorNodeBase>(B->GetOwningNode());
 
 	if (A->GetOwningNode() == B->GetOwningNode())
 		return FPinConnectionResponse(CONNECT_RESPONSE_DISALLOW, TEXT("You can't connect a node to itself."));

@@ -94,7 +94,8 @@ void FEventFlowSystemBP_Compiler::FinishCompilingClass(UClass* Class)
 {
 	UEventFlowGraphBlueprintGeneratedClass* BlueprintGeneratedClass = CastChecked<UEventFlowGraphBlueprintGeneratedClass>(Class);
 
-	if (bIsFullCompile)
+	//快速编译骨架类时不构造事件树
+	if (bIsFullCompile && !Class->HasAnyFlags(RF_Transient))
 	{
 		UEventFlowGraphBlueprint* EventFlowBlueprint = CastChecked<UEventFlowGraphBlueprint>(Class->ClassGeneratedBy);
 		if (UEventFlowSystemEditorGraph* DesignerGraph = Cast<UEventFlowSystemEditorGraph>(EventFlowBlueprint->EdGraph))

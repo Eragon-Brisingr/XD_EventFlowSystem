@@ -116,7 +116,7 @@ public:
 	class UXD_EventFlowElementBase* EventFlowElement;
 
 	UPROPERTY(NotReplicated)
-	TMap<FName, UXD_EventFlowSequenceBase*> EventFlowFinishBranch;
+	UXD_EventFlowSequenceBase* NextSequenceTemplate;
 };
 
 //完成必须的游戏事件元素之后出现分支
