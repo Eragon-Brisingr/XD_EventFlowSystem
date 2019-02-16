@@ -150,7 +150,7 @@ void UXD_EventFlowSequenceBase::WhenDeactiveEventFlowSequence()
 
 }
 
-void UXD_EventFlowSequenceBase::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UXD_EventFlowSequenceBase::InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement)
 {
 #if WITH_EDITOR
 	if (ensure(bIsSequenceActived) == false)
@@ -159,10 +159,10 @@ void UXD_EventFlowSequenceBase::InvokeFinishEventFlowSequence(UXD_EventFlowEleme
 		return;
 	}
 #endif
-	WhenInvokeFinishEventFlowSequence(EventFlowElement, NextBranchTag);
+	WhenInvokeFinishEventFlowSequence(EventFlowElement);
 }
 
-void UXD_EventFlowSequenceBase::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UXD_EventFlowSequenceBase::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement)
 {
 	unimplemented();
 }
@@ -279,7 +279,7 @@ void UEventFlowSequence_Branch::WhenDeactiveEventFlowSequence()
 	DeactiveFinishBranchs();
 }
 
-void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UEventFlowSequence_Branch::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement)
 {
 	//激活结束游戏事件的关键游戏事件
 	if (EventFlowElementList.Contains(EventFlowElement))
@@ -391,7 +391,7 @@ void UEventFlowSequence_Branch::OnRep_EventFlowElementFinishList()
 	}
 }
 
-void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag)
+void UEventFlowSequence_List::WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement)
 {
 	if (IsEveryMustEventFlowElementFinished())
 	{

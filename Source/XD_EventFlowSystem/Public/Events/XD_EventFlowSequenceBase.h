@@ -71,9 +71,9 @@ public:
 #if WITH_EDITORONLY_DATA
 	uint8 bIsSequenceActived : 1;
 #endif
-	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
+	void InvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement);
 	//任务元素向任务序列申请完成该序列，是否完成交由该任务序列判断
-	virtual void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag);
+	virtual void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement);
 
 	//当游戏事件元素从完成变为未完成 e.g.需收集的道具开始达到要求，之后被减少了
 	virtual void WhenEventFlowElementUnfinished(){}
@@ -139,7 +139,7 @@ public:
 
 	void WhenDeactiveEventFlowSequence() override;
 
-	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
+	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement) override;
 
 	void WhenEventFlowElementUnfinished() override;
 
@@ -165,7 +165,7 @@ class XD_EVENTFLOWSYSTEM_API UEventFlowSequence_List : public UXD_EventFlowSeque
 {
 	GENERATED_BODY()
 public:
-	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement, const FName& NextBranchTag) override;
+	void WhenInvokeFinishEventFlowSequence(UXD_EventFlowElementBase* EventFlowElement) override;
 public:
  	UPROPERTY()
  	UXD_EventFlowSequenceBase* NextSequenceTemplate;

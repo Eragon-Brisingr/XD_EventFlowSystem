@@ -83,13 +83,13 @@ FText UXD_EventFlowElementBase::ReceiveGetDescribe_Implementation() const
 	return FText();
 }
 
-void UXD_EventFlowElementBase::FinishEventFlowElement(const FName& NextBranchTag)
+void UXD_EventFlowElementBase::FinishEventFlowElement()
 {
 	if (bIsFinished == false)
 	{
 		bIsFinished = true;
 		EventFlowSystem_Display_Log("%s完成[%s]中的游戏事件序列%s中的游戏事件元素%s，[%s]", *UXD_DebugFunctionLibrary::GetDebugName(GetOwningCharacter()), *GetEventFlow()->GetEventFlowName().ToString(), *UXD_DebugFunctionLibrary::GetDebugName(OwingEventFlowSequence), *UXD_DebugFunctionLibrary::GetDebugName(this), *GetDescribe().ToString());
-		OwingEventFlowSequence->InvokeFinishEventFlowSequence(this, NextBranchTag);
+		OwingEventFlowSequence->InvokeFinishEventFlowSequence(this);
 	}
 }
 

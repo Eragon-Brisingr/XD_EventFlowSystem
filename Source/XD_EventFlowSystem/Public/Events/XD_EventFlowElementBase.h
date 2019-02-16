@@ -75,7 +75,7 @@ public:
 	* @param	NextBranchTag		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用NextBranchTag区分
 	*/
 	UFUNCTION(BlueprintCallable, Category = "游戏事件", meta = (AdvancedDisplay = "0"))
-	void FinishEventFlowElement(const FName& NextBranchTag = NAME_None);
+	void FinishEventFlowElement();
 
 	//该游戏元素又未完成了调用这个 e.g.目标数量道具减少
 	UFUNCTION(BlueprintCallable, Category = "游戏事件")
