@@ -70,10 +70,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "游戏事件")
 	FORCEINLINE bool IsFinished() const { return bIsFinished; }
 
-	/**
-	* 完成该任务序列
-	* @param	NextBranchTag		游戏事件元素中可能也存在分支，比如说和某人对话中出现的分支，用NextBranchTag区分
-	*/
+	//完成该任务序列
 	UFUNCTION(BlueprintCallable, Category = "游戏事件", meta = (AdvancedDisplay = "0"))
 	void FinishEventFlowElement();
 
