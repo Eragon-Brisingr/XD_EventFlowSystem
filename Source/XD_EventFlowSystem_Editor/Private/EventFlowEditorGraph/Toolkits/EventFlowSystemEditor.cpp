@@ -143,9 +143,9 @@ void FEventFlowSystemEditor::SaveAsset_Execute()
 	FBlueprintEditor::SaveAsset_Execute();
 }
 
-void FEventFlowSystemEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& TabManager)
+void FEventFlowSystemEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	FBlueprintEditor::RegisterTabSpawners(TabManager);
+	FBlueprintEditor::RegisterTabSpawners(InTabManager);
 }
 
 void FEventFlowSystemEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& TabManager)

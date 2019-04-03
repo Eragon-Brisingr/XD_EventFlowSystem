@@ -43,7 +43,7 @@ void FXD_EventFlowSystem_EditorModule::StartNodeHelper()
 
 TSharedPtr<FKismetCompilerContext> FXD_EventFlowSystem_EditorModule::GetCompilerForBP(UBlueprint* BP, FCompilerResultsLog& InMessageLog, const FKismetCompilerOptions& InCompileOptions)
 {
-	return TSharedPtr<FKismetCompilerContext>(new FEventFlowSystemBP_Compiler(CastChecked<UEventFlowGraphBlueprint>(BP), InMessageLog, InCompileOptions, nullptr));
+	return TSharedPtr<FKismetCompilerContext>(new FEventFlowSystemBP_Compiler(CastChecked<UEventFlowGraphBlueprint>(BP), InMessageLog, InCompileOptions));
 }
 
 #undef LOCTEXT_NAMESPACE

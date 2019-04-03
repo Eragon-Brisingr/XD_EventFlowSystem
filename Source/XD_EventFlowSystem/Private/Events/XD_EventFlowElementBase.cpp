@@ -8,7 +8,7 @@
 #define LOCTEXT_NAMESPACE "游戏事件"
 
 UXD_EventFlowElementBase::UXD_EventFlowElementBase()
-	:bIsMust(true), bIsShowEventFlowElement(true), bIsFinished(false)//, bIsActive(true)
+	:bIsFinished(false), bIsMust(true), bIsShowEventFlowElement(true)//, bIsActive(true)
 {
 
 }

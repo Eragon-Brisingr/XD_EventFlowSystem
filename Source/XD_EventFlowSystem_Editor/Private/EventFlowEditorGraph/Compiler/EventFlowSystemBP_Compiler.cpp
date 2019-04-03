@@ -12,8 +12,8 @@
 
 #define CPF_Instanced (CPF_PersistentInstance | CPF_ExportObject | CPF_InstancedReference)
 
-FEventFlowSystemBP_Compiler::FEventFlowSystemBP_Compiler(UEventFlowGraphBlueprint* SourceSketch, FCompilerResultsLog& InMessageLog, const FKismetCompilerOptions& InCompilerOptions, TArray<UObject*>* InObjLoaded)
-	: FKismetCompilerContext(SourceSketch, InMessageLog, InCompilerOptions, InObjLoaded)
+FEventFlowSystemBP_Compiler::FEventFlowSystemBP_Compiler(UEventFlowGraphBlueprint* SourceSketch, FCompilerResultsLog& InMessageLog, const FKismetCompilerOptions& InCompilerOptions)
+	: FKismetCompilerContext(SourceSketch, InMessageLog, InCompilerOptions)
 {
 
 }

@@ -18,7 +18,7 @@ protected:
 	typedef FKismetCompilerContext Super;
 
 public:
-	FEventFlowSystemBP_Compiler(UEventFlowGraphBlueprint* SourceSketch, FCompilerResultsLog& InMessageLog, const FKismetCompilerOptions& InCompilerOptions, TArray<UObject*>* InObjLoaded);
+	FEventFlowSystemBP_Compiler(UEventFlowGraphBlueprint* SourceSketch, FCompilerResultsLog& InMessageLog, const FKismetCompilerOptions& InCompilerOptions);
 	~FEventFlowSystemBP_Compiler() override;
 
 	// FKismetCompilerContext

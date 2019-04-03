@@ -16,11 +16,11 @@ UXD_EventFlowBase::UXD_EventFlowBase()
 
 }
 
-void UXD_EventFlowBase::ReinitEventFlow(class UXD_EventFlowManager* EventFlowOwner)
+void UXD_EventFlowBase::ReinitEventFlow(class UXD_EventFlowManager* InEventFlowOwner)
 {
 	for (UXD_EventFlowSequenceBase* EventFlowSequence : CurrentEventFlowSequenceList)
 	{
-		this->EventFlowOwner = EventFlowOwner;
+		EventFlowOwner = InEventFlowOwner;
 		if (EventFlowSequence)
 		{
 			EventFlowSequence->OwingEventFlow = this;

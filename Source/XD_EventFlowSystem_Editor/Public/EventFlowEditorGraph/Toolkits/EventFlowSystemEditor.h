@@ -25,7 +25,7 @@ public:
 	FName GetToolkitFName() const override;
 	FText GetBaseToolkitName() const override;
 	FString GetWorldCentricTabPrefix() const override;
-	void RegisterTabSpawners(const TSharedRef<FTabManager>& TabManager) override;
+	void RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager) override;
 	void UnregisterTabSpawners(const TSharedRef<FTabManager>& TabManager) override;
 	void SaveAsset_Execute() override;
 
