@@ -148,9 +148,9 @@ void FEventFlowSystemEditor::RegisterTabSpawners(const TSharedRef<FTabManager>& 
 	FBlueprintEditor::RegisterTabSpawners(InTabManager);
 }
 
-void FEventFlowSystemEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& TabManager)
+void FEventFlowSystemEditor::UnregisterTabSpawners(const TSharedRef<FTabManager>& InTabManager)
 {
-	FBlueprintEditor::UnregisterTabSpawners(TabManager);
+	FBlueprintEditor::UnregisterTabSpawners(InTabManager);
 }
 
 // END Commands and binding
