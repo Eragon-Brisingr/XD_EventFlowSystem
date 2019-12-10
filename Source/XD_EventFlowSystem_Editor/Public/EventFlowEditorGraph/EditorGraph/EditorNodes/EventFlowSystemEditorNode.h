@@ -47,7 +47,7 @@ public:
 	void PrepareForCopying() override;
 	void DestroyNode() override;
 	void AutowireNewNode(UEdGraphPin* FromPin) override;
-	void GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const override;
+	void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 	void NodeConnectionListChanged() override;
 
 	template<typename T>
@@ -183,7 +183,7 @@ class UEventSequenceEdNodeBase : public UEventFlowSystemEditorNodeBase
 {
 	GENERATED_BODY()
 public:
-	void GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const override;
+	void GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const override;
 
 	void AddElement(UEventElementEdNode* Element);
 	void RemoveElement(UEventElementEdNode* Element);

@@ -474,9 +474,9 @@ bool FEventFlowDetailExtensionHandler::IsPropertyExtendable(const UClass* InObje
 	return false;
 }
 
-TSharedRef<SWidget> FEventFlowDetailExtensionHandler::GenerateExtensionWidget(const UClass* InObjectClass, TSharedPtr<IPropertyHandle> InPropertyHandle)
+TSharedRef<SWidget> FEventFlowDetailExtensionHandler::GenerateExtensionWidget(const IDetailLayoutBuilder& InDetailBuilder, const UClass* InObjectClass, TSharedPtr<IPropertyHandle> PropertyHandle)
 {
-	UProperty* Property = InPropertyHandle->GetProperty();
+	UProperty* Property = PropertyHandle->GetProperty();
 	FString DelegateName = Property->GetName() + "Delegate";
 
 	UDelegateProperty* DelegateProperty = FindFieldChecked<UDelegateProperty>(CastChecked<UClass>(Property->GetOuter()), FName(*DelegateName));
@@ -489,7 +489,7 @@ TSharedRef<SWidget> FEventFlowDetailExtensionHandler::GenerateExtensionWidget(co
 		return SNullWidget::NullWidget;
 	}
 
-	return SNew(SEventFlowPropertyBinding, BlueprintEditor, DelegateProperty, InPropertyHandle.ToSharedRef());
+	return SNew(SEventFlowPropertyBinding, BlueprintEditor, DelegateProperty, PropertyHandle.ToSharedRef());
 }
 
 #undef LOCTEXT_NAMESPACE

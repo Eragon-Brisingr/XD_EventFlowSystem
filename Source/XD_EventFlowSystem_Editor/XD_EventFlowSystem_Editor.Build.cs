@@ -44,9 +44,9 @@ public class XD_EventFlowSystem_Editor : ModuleRules
                 "GraphEditor",
                 "ApplicationCore",
                 "KismetCompiler",
-
                 "Kismet",
                 "BlueprintGraph",
+                "ToolMenus",
 
                 "XD_EventFlowSystem",
 

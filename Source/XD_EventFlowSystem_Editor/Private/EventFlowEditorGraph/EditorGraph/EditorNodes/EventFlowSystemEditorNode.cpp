@@ -1,5 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 #include "EventFlowSystemEditorNode.h"
+#include "ToolMenu.h"
+#include "ToolMenuSection.h"
 #include "EventFlowGraphNodeBase.h"
 #include "EventFlowSystemEditorGraph.h"
 #include "SEventFlowSystemGraphNode.h"
@@ -159,19 +161,17 @@ void UEventFlowSystemEditorNodeBase::AutowireNewNode(UEdGraphPin * FromPin)
 	}
 }
 
-void UEventFlowSystemEditorNodeBase::GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const
+void UEventFlowSystemEditorNodeBase::GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const
 {
-	FMenuBuilder* MenuBuilder = Context.MenuBuilder;
-	MenuBuilder->BeginSection(NAME_None, LOCTEXT("NodeActionsMenuHeader", "节点操作"));
+	FToolMenuSection& Section = Menu->AddSection(TEXT("EventFlowSystemNodeAction"), LOCTEXT("NodeActionsMenuHeader", "节点操作"));
 	{
-		MenuBuilder->AddMenuEntry(FGenericCommands::Get().Delete);
-		MenuBuilder->AddMenuEntry(FGenericCommands::Get().Cut);
-		MenuBuilder->AddMenuEntry(FGenericCommands::Get().Copy);
-		MenuBuilder->AddMenuEntry(FGenericCommands::Get().Duplicate);
+		Section.AddMenuEntry(FGenericCommands::Get().Delete);
+		Section.AddMenuEntry(FGenericCommands::Get().Cut);
+		Section.AddMenuEntry(FGenericCommands::Get().Copy);
+		Section.AddMenuEntry(FGenericCommands::Get().Duplicate);
 
-		MenuBuilder->AddMenuEntry(FGraphEditorCommands::Get().BreakNodeLinks);
+		Section.AddMenuEntry(FGraphEditorCommands::Get().BreakNodeLinks);
 	}
-	MenuBuilder->EndSection();
 }
 
 void UEventFlowSystemEditorNodeBase::NodeConnectionListChanged()
@@ -262,54 +262,56 @@ UEdGraphNode* FNewBranch_SchemaAction::PerformAction(class UEdGraph* ParentGraph
 	return nullptr;
 }
 
-void UEventSequenceEdNodeBase::GetContextMenuActions(const FGraphNodeContextMenuBuilder& Context) const
+void UEventSequenceEdNodeBase::GetNodeContextMenuActions(class UToolMenu* Menu, class UGraphNodeContextMenuContext* Context) const
 {
-	UEventFlowSystemEditorNodeBase::GetContextMenuActions(Context);
+	UEventFlowSystemEditorNodeBase::GetNodeContextMenuActions(Menu, Context);
 
-	Context.MenuBuilder->AddSubMenu(
-		LOCTEXT("添加事件元素", "添加事件元素"),
-		LOCTEXT("添加事件元素", "添加事件元素"),
-		FNewMenuDelegate::CreateLambda(
-	[=](class FMenuBuilder& MenuBuilder)
-	{
-		class SGraphEditorActionMenu_EventElement : public SGraphEditorActionMenuBase
+ 	UToolMenu* SubMenu = Menu->AddSubMenu(Menu->MenuOwner, TEXT("AddEventElement"), TEXT("AddEventElement"), LOCTEXT("添加事件元素", "添加事件元素"), LOCTEXT("添加事件元素", "添加事件元素"));
+
+	const UEdGraph* Graph = Context->Graph;
+	SubMenu->AddDynamicSection(TEXT("AddMenuOptions"), FNewToolMenuDelegate::CreateLambda([=](UToolMenu* InMenu)
 		{
-		public:
-			void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override
-			{
-				FGraphContextMenuBuilder ContextMenuBuilder(GraphObj);
-
-				FXD_EventFlowSystem_EditorModule& Module = FModuleManager::LoadModuleChecked<FXD_EventFlowSystem_EditorModule>("XD_EventFlowSystem_Editor");
-				TSharedPtr<FEventFlowSystem_Editor_ClassHelper> Helper = Module.GetHelper();
-				TArray<FEventFlowSystem_Editor_ClassData> AllSubClasses;
-				Helper->GatherClasses(UXD_EventFlowElementBase::StaticClass(), AllSubClasses);
-
-				FText ToolTip = LOCTEXT("NewEditorSequenceElementTooltip", "向序列添加元素 {NodeName}");
-				FText MenuDesc = LOCTEXT("NewEditorSequenceElementDescription", "{NodeName}");
-				for (auto& ClassData : AllSubClasses)
+			FNewToolMenuDelegateLegacy::CreateLambda([=](FMenuBuilder& MenuBuilder, UToolMenu* InMenu)
 				{
-					if (!ClassData.GetClass()->HasAnyClassFlags(CLASS_Abstract))
+					class SGraphEditorActionMenu_EventElement : public SGraphEditorActionMenuBase
 					{
-						FFormatNamedArguments Arguments;
-						Arguments.Add(TEXT("NodeName"), ClassData.GetClass()->GetDisplayNameText());
-						FText Category = ClassData.GetCategory();
-						TSharedPtr<FNewElement_SchemaAction> NewNodeAction = MakeShareable(new FNewElement_SchemaAction(Category.IsEmpty() ? LOCTEXT("事件元素其他分类", "其他") : Category, FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, CastChecked<UEventSequenceEdNodeBase>(GraphNode), ClassData.GetClass()));
+					public:
+						void CollectAllActions(FGraphActionListBuilderBase& OutAllActions) override
+						{
+							FGraphContextMenuBuilder ContextMenuBuilder(GraphObj);
 
-						ContextMenuBuilder.AddAction(NewNodeAction);
-					}
-				}
-				OutAllActions.Append(ContextMenuBuilder);
-			}
-		};
+							FXD_EventFlowSystem_EditorModule& Module = FModuleManager::LoadModuleChecked<FXD_EventFlowSystem_EditorModule>("XD_EventFlowSystem_Editor");
+							TSharedPtr<FEventFlowSystem_Editor_ClassHelper> Helper = Module.GetHelper();
+							TArray<FEventFlowSystem_Editor_ClassData> AllSubClasses;
+							Helper->GatherClasses(UXD_EventFlowElementBase::StaticClass(), AllSubClasses);
 
-		TSharedRef<SGraphEditorActionMenu_EventElement> Menu =
-			SNew(SGraphEditorActionMenu_EventElement)
-			.GraphObj(const_cast<UEdGraph*>(Context.Graph))
-			.GraphNode(const_cast<UEventSequenceEdNodeBase*>(this))
-			.AutoExpandActionMenu(true);
+							FText ToolTip = LOCTEXT("NewEditorSequenceElementTooltip", "向序列添加元素 {NodeName}");
+							FText MenuDesc = LOCTEXT("NewEditorSequenceElementDescription", "{NodeName}");
+							for (auto& ClassData : AllSubClasses)
+							{
+								if (!ClassData.GetClass()->HasAnyClassFlags(CLASS_Abstract))
+								{
+									FFormatNamedArguments Arguments;
+									Arguments.Add(TEXT("NodeName"), ClassData.GetClass()->GetDisplayNameText());
+									FText Category = ClassData.GetCategory();
+									TSharedPtr<FNewElement_SchemaAction> NewNodeAction = MakeShareable(new FNewElement_SchemaAction(Category.IsEmpty() ? LOCTEXT("事件元素其他分类", "其他") : Category, FText::Format(MenuDesc, Arguments), FText::Format(ToolTip, Arguments), 0, CastChecked<UEventSequenceEdNodeBase>(GraphNode), ClassData.GetClass()));
 
-		MenuBuilder.AddWidget(Menu, FText(), true);
-	}));
+									ContextMenuBuilder.AddAction(NewNodeAction);
+								}
+							}
+							OutAllActions.Append(ContextMenuBuilder);
+						}
+					};
+
+					TSharedRef<SGraphEditorActionMenu_EventElement> Menu =
+						SNew(SGraphEditorActionMenu_EventElement)
+						.GraphObj(const_cast<UEdGraph*>(Graph))
+						.GraphNode(const_cast<UEventSequenceEdNodeBase*>(this))
+						.AutoExpandActionMenu(true);
+
+					MenuBuilder.AddWidget(Menu, FText(), true);
+				});
+		}));
 }
 
 void UEventElementEdNode::DestroyNode()

@@ -50,11 +50,6 @@ void UEventFlowSystemEditorGraphSchema::GetGraphContextActions(FGraphContextMenu
 	}
 }
 
-void UEventFlowSystemEditorGraphSchema::GetContextMenuActions(const UEdGraph* CurrentGraph, const UEdGraphNode* InGraphNode, const UEdGraphPin* InGraphPin, FMenuBuilder* MenuBuilder, bool bIsDebugging) const
-{
-	Super::GetContextMenuActions(CurrentGraph, InGraphNode, InGraphPin, MenuBuilder, bIsDebugging);
-}
-
 const FPinConnectionResponse UEventFlowSystemEditorGraphSchema::CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const
 {
 	if (!(A && B))

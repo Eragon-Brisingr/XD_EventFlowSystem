@@ -12,6 +12,7 @@ UXD_EventFlowManager::UXD_EventFlowManager()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+	SetIsReplicatedByDefault(true);
 }
 
 
@@ -21,8 +22,6 @@ void UXD_EventFlowManager::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-
-	SetIsReplicated(true);
 }
 
 
