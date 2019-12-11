@@ -1,6 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "SEventFlowSystemGraphPin.h"
-#include "EventFlowSystem_EditorStyle.h"
+#include "EventFlowEditorGraph/EditorGraph/SlateWidgets/SEventFlowSystemGraphPin.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_EditorStyle.h"
 
 
 void SEventFlowSystemGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)

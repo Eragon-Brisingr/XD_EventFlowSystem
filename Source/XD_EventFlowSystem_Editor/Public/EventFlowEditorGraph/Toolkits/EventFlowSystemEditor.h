@@ -2,11 +2,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BlueprintEditor.h"
-#include "NotifyHook.h"
-#include "GraphEditor.h"
-#include "IDetailsView.h"
-#include "EventFlowGraphBlueprint.h"
+#include <BlueprintEditor.h>
+#include <Misc/NotifyHook.h>
+#include <GraphEditor.h>
+#include <IDetailsView.h>
 
 class UEventFlowGraphBlueprint;
 class UEventFlowSystemEditorGraph;

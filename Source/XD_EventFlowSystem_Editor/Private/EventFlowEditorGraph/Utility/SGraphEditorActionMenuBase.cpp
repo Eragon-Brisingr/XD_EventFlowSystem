@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SGraphEditorActionMenuBase.h"
+#include "EventFlowEditorGraph/Utility/SGraphEditorActionMenuBase.h"
 #include "SGraphActionMenu.h"
 
 void SGraphEditorActionMenuBase::Construct(const FArguments& InArgs)

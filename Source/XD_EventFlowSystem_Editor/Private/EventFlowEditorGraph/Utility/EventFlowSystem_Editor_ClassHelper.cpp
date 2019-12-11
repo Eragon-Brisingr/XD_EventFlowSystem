@@ -1,14 +1,14 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystem_Editor_ClassHelper.h"
-#include "Class.h"
-#include "FeedbackContext.h"
-#include "Package.h"
-#include "Engine/Blueprint.h"
-#include "AssetRegistryModule.h"
-#include "HotReloadInterface.h"
-#include "Editor.h"
-#include "ConstructorHelpers.h"
-#include "EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_ClassHelper.h"
+#include <UObject/Class.h>
+#include <Misc/FeedbackContext.h>
+#include <UObject/Package.h>
+#include <Engine/Blueprint.h>
+#include <AssetRegistryModule.h>
+#include <Misc/HotReloadInterface.h>
+#include <Editor.h>
+#include <UObject/ConstructorHelpers.h>
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem_Editor"
 

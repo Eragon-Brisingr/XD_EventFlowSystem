@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventFlowGraphNodeBase.h"
-#include <UserWidget.h>
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include <Blueprint/UserWidget.h>
 #include "XD_EventFlowElementBase.generated.h"
 
 /**

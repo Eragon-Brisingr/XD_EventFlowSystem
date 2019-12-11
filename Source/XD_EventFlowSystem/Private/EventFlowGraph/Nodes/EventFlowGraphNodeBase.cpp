@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowGraphNodeBase.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
 #include "XD_ObjectFunctionLibrary.h"
-#include "XD_EventFlowBase.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
+#include "Events/XD_EventFlowBase.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 

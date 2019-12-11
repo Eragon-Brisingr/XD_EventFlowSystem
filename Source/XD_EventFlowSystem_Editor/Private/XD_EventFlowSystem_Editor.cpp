@@ -1,17 +1,17 @@
 ﻿// Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
 #include "XD_EventFlowSystem_Editor.h"
-#include "ModuleManager.h"
+#include <Modules/ModuleManager.h>
 #include "IAssetTools.h"
-#include "AssetToolsModule.h"
-#include "EventFlowGraph_AssetTypeActions.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "EventFlowSystem_Editor_ClassHelper.h"
-#include "EventFlowGraphNodeBase.h"
-#include "KismetCompiler.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
-#include "EventFlowGraphBlueprint.h"
-#include "EventFlowSystemBP_Compiler.h"
+#include <AssetToolsModule.h>
+#include "EventFlowEditorGraph/AssetTypeActions/EventFlowGraph_AssetTypeActions.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_ClassHelper.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include <KismetCompiler.h>
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
+#include "EventFlowEditorGraph/Compiler/EventFlowSystemBP_Compiler.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph_EditorModule"
 

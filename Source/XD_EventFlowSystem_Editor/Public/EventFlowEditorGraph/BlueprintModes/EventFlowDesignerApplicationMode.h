@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventFlowBlueprintApplicationModeBase.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowBlueprintApplicationModeBase.h"
 #include <Tickable.h>
 
 class SGraphEditor;

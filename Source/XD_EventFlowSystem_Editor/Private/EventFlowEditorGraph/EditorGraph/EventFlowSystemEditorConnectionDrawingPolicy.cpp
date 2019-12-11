@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditorConnectionDrawingPolicy.h"
-#include "DrawElements.h"
-#include "EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorConnectionDrawingPolicy.h"
+#include <Rendering/DrawElements.h>
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
 
 FEventFlowSystemEditorConnectionDrawingPolicy::FEventFlowSystemEditorConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID, float ZoomFactor, const FSlateRect& InClippingRect, FSlateWindowElementList& InDrawElements, UEdGraph* InGraphObj)
 	: FConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, ZoomFactor, InClippingRect, InDrawElements)

@@ -3,8 +3,8 @@
 
 #include "CoreMinimal.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "SubclassOf.h"
-#include "EventFlowGraphNodeBase.h"
+#include <Templates/SubclassOf.h>
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
 #include "EventFlowSystemGraph_NewNode_SchemaAction.generated.h"
 
 class UXD_EventFlowSequenceBase;

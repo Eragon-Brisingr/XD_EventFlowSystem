@@ -2,7 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "UObject/NoExportTypes.h"
+#include <UObject/NoExportTypes.h>
 #include "EventFlowGraphNodeBase.generated.h"
 
 class UXD_EventFlowBase;

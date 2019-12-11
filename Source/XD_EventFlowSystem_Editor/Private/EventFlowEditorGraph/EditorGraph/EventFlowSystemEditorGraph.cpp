@@ -1,10 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditorGraph.h"
-#include "EventFlowGraphNodeBase.h"
-#include "EventFlowSystemEditorNode.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "EdGraph/EdGraphPin.h"
-#include "EventFlowGraphBlueprint.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include <EdGraph/EdGraphPin.h>
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
 
 void UEventFlowSystemEditorGraph::RefreshNodes()
 {

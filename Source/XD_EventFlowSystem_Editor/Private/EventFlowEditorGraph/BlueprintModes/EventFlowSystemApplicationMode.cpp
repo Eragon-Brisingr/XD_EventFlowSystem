@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventFlowSystemApplicationMode.h"
-#include "BlueprintEditorTabs.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowSystemApplicationMode.h"
+#include <BlueprintEditorTabs.h>
 
 FEventFlowSystemApplicationMode::FEventFlowSystemApplicationMode(TSharedPtr<class FEventFlowSystemEditor> GraphEditorToolkit)
 	: FEventFlowBlueprintApplicationModeBase(GraphEditorToolkit, FBlueprintApplicationModesTemplate::GraphMode)

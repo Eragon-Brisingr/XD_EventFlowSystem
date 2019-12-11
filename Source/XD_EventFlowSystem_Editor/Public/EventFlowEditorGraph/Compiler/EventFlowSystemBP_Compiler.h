@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "KismetCompiler.h"
+#include <KismetCompiler.h>
 
 class UEventFlowGraphBlueprint;
 class FCompilerResultsLog;

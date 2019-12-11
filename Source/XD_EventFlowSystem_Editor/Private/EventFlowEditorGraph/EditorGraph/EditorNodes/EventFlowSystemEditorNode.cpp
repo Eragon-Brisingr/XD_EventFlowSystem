@@ -1,24 +1,24 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditorNode.h"
-#include "ToolMenu.h"
-#include "ToolMenuSection.h"
-#include "EventFlowGraphNodeBase.h"
-#include "EventFlowSystemEditorGraph.h"
-#include "SEventFlowSystemGraphNode.h"
-#include "ModuleManager.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "GenericCommands.h"
-#include "GraphEditorActions.h"
-#include "XD_EventFlowSequenceBase.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include <ToolMenu.h>
+#include <ToolMenuSection.h>
+#include <Modules/ModuleManager.h>
+#include <Framework/Commands/GenericCommands.h>
+#include <GraphEditorActions.h>
+#include <Kismet2/CompilerResultsLog.h>
+#include "Events/XD_EventFlowSequenceBase.h"
+#include "Events/XD_EventFlowElementBase.h"
+#include "Events/XD_EventFlowBase.h"
 #include "XD_EventFlowSystem_Editor.h"
-#include "EventFlowSystem_Editor_ClassHelper.h"
-#include "XD_EventFlowElementBase.h"
-#include "SGraphEditorActionMenuBase.h"
-#include "CompilerResultsLog.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
-#include "EventFlowSystem_EditorStyle.h"
-#include "XD_EventFlowBase.h"
-#include "SEventFlowPropertyBinding.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "EventFlowEditorGraph/EditorGraph/SlateWidgets/SEventFlowSystemGraphNode.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_ClassHelper.h"
+#include "EventFlowEditorGraph/Utility/SGraphEditorActionMenuBase.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_EditorStyle.h"
+#include "EventFlowEditorGraph/SCompoundWidget/SEventFlowPropertyBinding.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 

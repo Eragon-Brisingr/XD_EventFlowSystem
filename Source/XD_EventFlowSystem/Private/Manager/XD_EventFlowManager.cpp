@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_EventFlowManager.h"
+#include "Manager/XD_EventFlowManager.h"
 #include "XD_EventFlowSystem_Log.h"
-#include "XD_EventFlowBase.h"
+#include "Events/XD_EventFlowBase.h"
 
 // Sets default values for this component's properties
 UXD_EventFlowManager::UXD_EventFlowManager()

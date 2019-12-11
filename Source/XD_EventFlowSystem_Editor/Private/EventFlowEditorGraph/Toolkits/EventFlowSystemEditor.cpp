@@ -1,19 +1,20 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditor.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "PropertyEditorModule.h"
-#include "ModuleManager.h"
-#include "Slate.h"
-#include "BlueprintEditorUtils.h"
-#include "GraphEditorActions.h"
-#include "EventFlowSystemEditorGraph.h"
-#include "EventFlowSystemEditorGraphSchema.h"
-#include "EdGraphUtilities.h"
-#include "EventFlowSystemEditorNode.h"
-#include "Editor.h"
-#include "EventFlowDesignerApplicationMode.h"
-#include "EventFlowSystemApplicationMode.h"
-#include "EventFlowGraphBlueprint.h"
+#include "EventFlowEditorGraph/Toolkits/EventFlowSystemEditor.h"
+#include <PropertyEditorModule.h>
+#include <Modules/ModuleManager.h>
+#include <Editor.h>
+#include <Slate.h>
+#include <Kismet2/BlueprintEditorUtils.h>
+#include <GraphEditorActions.h>
+#include <EdGraphUtilities.h>
+
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraphSchema.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowDesignerApplicationMode.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowSystemApplicationMode.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
 
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem_Editor"

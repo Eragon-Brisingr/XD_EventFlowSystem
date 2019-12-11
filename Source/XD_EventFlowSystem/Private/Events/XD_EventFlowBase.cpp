@@ -1,13 +1,13 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_EventFlowBase.h"
-#include <UnrealNetwork.h>
+#include "Events/XD_EventFlowBase.h"
+#include <Net/UnrealNetwork.h>
 #include <Engine/ActorChannel.h>
-#include "XD_EventFlowManager.h"
-#include "XD_EventFlowSequenceBase.h"
+#include "Manager/XD_EventFlowManager.h"
+#include "Events/XD_EventFlowSequenceBase.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
 #include "XD_DebugFunctionLibrary.h"
 #include "XD_EventFlowSystem_Log.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
 #include "XD_ObjectFunctionLibrary.h"
 
 UXD_EventFlowBase::UXD_EventFlowBase()

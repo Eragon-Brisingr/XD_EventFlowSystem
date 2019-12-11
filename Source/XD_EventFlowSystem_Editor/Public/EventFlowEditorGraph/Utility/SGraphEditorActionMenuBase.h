@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SBorder.h"
-#include "GraphEditor.h"
+#include <Widgets/Layout/SBorder.h>
+#include <GraphEditor.h>
 
 class UEdGraph;
 class UEdGraphPin;

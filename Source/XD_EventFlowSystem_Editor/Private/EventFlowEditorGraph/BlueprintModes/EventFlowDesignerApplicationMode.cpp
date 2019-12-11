@@ -1,29 +1,30 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventFlowDesignerApplicationMode.h"
-#include "WorkflowTabFactory.h"
-#include "EventFlowSystemEditor.h"
-#include "BlueprintEditor.h"
-#include "PropertyEditorModule.h"
-#include "GraphEditor.h"
-#include "GenericCommands.h"
-#include "EdGraphUtilities.h"
-#include "PlatformApplicationMisc.h"
-#include "SBlueprintEditorToolbar.h"
-#include "BlueprintEditorUtils.h"
-#include "EventFlowSystemEditorNode.h"
-#include "EventFlowSystemEditorGraph.h"
-#include "PropertyEditorDelegates.h"
-#include "SKismetInspector.h"
-#include "K2Node_ComponentBoundEvent.h"
-#include "MultiBoxBuilder.h"
-#include "SlateApplication.h"
-#include "ScopedTransaction.h"
-#include "EventFlowGraphBlueprint.h"
-#include "BlueprintEditorTabs.h"
-#include "XD_EventFlowElementBase.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "SEventFlowDetailsView.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowDesignerApplicationMode.h"
+#include <WorkflowOrientedApp/WorkflowTabFactory.h>
+#include <BlueprintEditor.h>
+#include <PropertyEditorModule.h>
+#include <GraphEditor.h>
+#include <Framework/Commands/GenericCommands.h>
+#include <EdGraphUtilities.h>
+#include <HAL/PlatformApplicationMisc.h>
+#include <SBlueprintEditorToolbar.h>
+#include <Kismet2/BlueprintEditorUtils.h>
+#include <PropertyEditorDelegates.h>
+#include <SKismetInspector.h>
+#include <Framework/MultiBox/MultiBoxBuilder.h>
+#include <K2Node_ComponentBoundEvent.h>
+#include <Framework/Application/SlateApplication.h>
+#include <ScopedTransaction.h>
+#include <BlueprintEditorTabs.h>
+
+#include "EventFlowEditorGraph/Toolkits/EventFlowSystemEditor.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
+#include "Events/XD_EventFlowElementBase.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/SCompoundWidget/SEventFlowDetailsView.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 

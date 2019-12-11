@@ -1,17 +1,18 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditorGraphSchema.h"
-#include "SubclassOf.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "EventFlowSystemEditorConnectionDrawingPolicy.h"
-#include "UObjectIterator.h"
-#include "EventFlowSystemGraph_NewNode_SchemaAction.h"
-#include "EdGraph/EdGraph.h"
-#include "EventFlowSystemEditorNode.h"
-#include "EventFlowSystem_Editor_ClassHelper.h"
-#include "ModuleManager.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraphSchema.h"
+#include <Templates/SubclassOf.h>
+#include <UObject/UObjectIterator.h>
+#include <EdGraph/EdGraph.h>
+#include <Modules/ModuleManager.h>
+
 #include "XD_EventFlowSystem_Editor.h"
-#include "EventFlowSystemEditorGraph.h"
-#include "XD_EventFlowSequenceBase.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorConnectionDrawingPolicy.h"
+#include "EventFlowEditorGraph/EditorGraph/SchemaActions/EventFlowSystemGraph_NewNode_SchemaAction.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_ClassHelper.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "Events/XD_EventFlowSequenceBase.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 

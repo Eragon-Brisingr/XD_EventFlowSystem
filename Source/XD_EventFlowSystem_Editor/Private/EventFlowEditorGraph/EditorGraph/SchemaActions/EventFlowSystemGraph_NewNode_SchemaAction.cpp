@@ -1,9 +1,9 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemGraph_NewNode_SchemaAction.h"
-#include "EventFlowSystemEditorNode.h"
-#include "EdGraph/EdGraph.h"
-#include "XD_EventFlowSequenceBase.h"
-#include "EventFlowSystemEditorGraph.h"
+#include "EventFlowEditorGraph/EditorGraph/SchemaActions/EventFlowSystemGraph_NewNode_SchemaAction.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include <EdGraph/EdGraph.h>
+#include "Events/XD_EventFlowSequenceBase.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
 #include "XD_TemplateLibrary.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"

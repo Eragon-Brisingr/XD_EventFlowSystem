@@ -1,8 +1,8 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventFlowBlueprintApplicationModeBase.h"
-#include "SModeWidget.h"
-#include "IDocumentation.h"
+#include "EventFlowEditorGraph/BlueprintModes/EventFlowBlueprintApplicationModeBase.h"
+#include <WorkflowOrientedApp/SModeWidget.h>
+#include <IDocumentation.h>
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 

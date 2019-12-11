@@ -1,9 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "EventFlowSystemEditorAssetFactory.h"
-#include "EventFlowGraphBlueprint.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
-#include "KismetEditorUtilities.h"
-#include "XD_EventFlowBase.h"
+#include "EventFlowEditorGraph/Factories/EventFlowSystemEditorAssetFactory.h"
+#include <Kismet2/KismetEditorUtilities.h>
+
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
+#include "Events/XD_EventFlowBase.h"
 
 UEventFlowSystemEditorAssetFactory::UEventFlowSystemEditorAssetFactory()
 {

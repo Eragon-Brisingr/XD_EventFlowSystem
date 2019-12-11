@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/Blueprint.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
+#include <Engine/Blueprint.h>
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
 #include "EventFlowGraphBlueprint.generated.h"
 
 class UEventFlowGraphBlueprint;

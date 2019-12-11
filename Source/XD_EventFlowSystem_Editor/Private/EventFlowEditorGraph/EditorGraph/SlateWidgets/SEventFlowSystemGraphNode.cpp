@@ -1,19 +1,20 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
-#include "SEventFlowSystemGraphNode.h"
-#include "Slate.h"
-#include "EventFlowSystemEditorNode.h"
-#include "SGraphPin.h"
-#include "SEventFlowSystemGraphPin.h"
-#include "EventFlowSystem_Editor_Log.h"
-#include "SCommentBubble.h"
-#include "NodeFactory.h"
-#include "SGraphNode.h"
-#include "SGraphPanel.h"
-#include "EventFlowSystem_EditorStyle.h"
+#include "EventFlowEditorGraph/EditorGraph/SlateWidgets/SEventFlowSystemGraphNode.h"
+#include <Slate.h>
+#include <SGraphPin.h>
+#include <SCommentBubble.h>
+#include <NodeFactory.h>
+#include <SGraphNode.h>
+#include <SGraphPanel.h>
 #include <PropertyEditorModule.h>
 #include <IDetailCustomization.h>
 #include <DetailLayoutBuilder.h>
-#include "SEventFlowPropertyBinding.h"
+
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_EditorStyle.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/EditorGraph/SlateWidgets/SEventFlowSystemGraphPin.h"
+#include "EventFlowEditorGraph/Utility/EventFlowSystem_Editor_Log.h"
+#include "EventFlowEditorGraph/SCompoundWidget/SEventFlowPropertyBinding.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem"
 

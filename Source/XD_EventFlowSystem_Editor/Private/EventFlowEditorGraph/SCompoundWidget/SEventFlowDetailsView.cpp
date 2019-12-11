@@ -1,17 +1,18 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "SEventFlowDetailsView.h"
-#include "IDetailCustomization.h"
-#include "DetailCategoryBuilder.h"
-#include "DetailLayoutBuilder.h"
-#include "SComboButton.h"
-#include "DetailWidgetRow.h"
-#include "ObjectEditorUtils.h"
-#include "KismetEditorUtilities.h"
-#include "SWidgetSwitcher.h"
-#include "IDetailPropertyExtensionHandler.h"
-#include "EventFlowSystemEditor.h"
-#include "EventFlowGraphBlueprint.h"
+#include "EventFlowEditorGraph/SCompoundWidget/SEventFlowDetailsView.h"
+#include <IDetailCustomization.h>
+#include <DetailCategoryBuilder.h>
+#include <DetailLayoutBuilder.h>
+#include <Widgets/Input/SComboButton.h>
+#include <DetailWidgetRow.h>
+#include <ObjectEditorUtils.h>
+#include <Kismet2/KismetEditorUtilities.h>
+#include <Widgets/Layout/SWidgetSwitcher.h>
+#include <IDetailPropertyExtensionHandler.h>
+
+#include "EventFlowEditorGraph/Toolkits/EventFlowSystemEditor.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 

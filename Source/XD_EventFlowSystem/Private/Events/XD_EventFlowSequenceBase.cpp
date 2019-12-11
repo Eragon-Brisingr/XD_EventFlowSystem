@@ -1,7 +1,7 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "XD_EventFlowSequenceBase.h"
-#include "XD_EventFlowBase.h"
+#include "Events/XD_EventFlowSequenceBase.h"
+#include "Events/XD_EventFlowBase.h"
 #include "XD_EventFlowSystem_Log.h"
 #include "XD_ObjectFunctionLibrary.h"
 #include "XD_DebugFunctionLibrary.h"

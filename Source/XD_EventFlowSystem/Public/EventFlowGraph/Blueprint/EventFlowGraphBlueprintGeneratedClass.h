@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/BlueprintGeneratedClass.h"
+#include <Engine/BlueprintGeneratedClass.h>
 #include "EventFlowGraphBlueprintGeneratedClass.generated.h"
 
 class UXD_EventFlowSequenceBase;

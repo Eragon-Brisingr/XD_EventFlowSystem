@@ -4,9 +4,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EdGraph/EdGraphNode.h"
-#include "EventFlowGraphNodeBase.h"
-#include "SubclassOf.h"
+#include <EdGraph/EdGraphNode.h>
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include <Templates/SubclassOf.h>
 #include "EventFlowSystemEditorNode.generated.h"
 
 class UEventFlowSequence_Branch;

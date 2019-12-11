@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EventFlowGraphNodeBase.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
 #include "XD_EventFlowSequenceBase.generated.h"
 
 class UXD_EventFlowElementBase;

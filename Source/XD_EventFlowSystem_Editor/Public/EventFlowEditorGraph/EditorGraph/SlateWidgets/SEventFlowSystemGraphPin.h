@@ -2,7 +2,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SGraphPin.h"
+#include <SGraphPin.h>
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem_Editor"
 

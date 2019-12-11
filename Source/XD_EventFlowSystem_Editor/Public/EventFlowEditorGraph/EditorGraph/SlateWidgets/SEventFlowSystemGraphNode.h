@@ -2,9 +2,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SGraphNode.h"
-#include "NotifyHook.h"
-#include "IDetailsView.h"
+#include <SGraphNode.h>
+#include <Misc/NotifyHook.h>
+#include <IDetailsView.h>
 
 /**
  * 

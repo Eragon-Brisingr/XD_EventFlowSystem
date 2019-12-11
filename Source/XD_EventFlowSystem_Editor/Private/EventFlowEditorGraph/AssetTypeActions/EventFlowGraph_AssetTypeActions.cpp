@@ -1,10 +1,10 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventFlowGraph_AssetTypeActions.h"
+#include "EventFlowEditorGraph/AssetTypeActions/EventFlowGraph_AssetTypeActions.h"
+#include <Modules/ModuleManager.h>
 #include "XD_EventFlowSystem_Editor.h"
-#include "EventFlowSystemEditor.h"
-#include "ModuleManager.h"
-#include "EventFlowGraphBlueprint.h"
+#include "EventFlowEditorGraph/Toolkits/EventFlowSystemEditor.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowSystem_Editor"
 

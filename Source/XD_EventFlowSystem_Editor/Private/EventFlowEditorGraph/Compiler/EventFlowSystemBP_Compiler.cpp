@@ -1,12 +1,13 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-#include "EventFlowSystemBP_Compiler.h"
-#include "EventFlowGraphBlueprint.h"
-#include "EventFlowGraphBlueprintGeneratedClass.h"
-#include "KismetReinstanceUtilities.h"
-#include "EventFlowGraphNodeBase.h"
-#include "EventFlowSystemEditorGraph.h"
-#include "EventFlowSystemEditorNode.h"
+#include "EventFlowEditorGraph/Compiler/EventFlowSystemBP_Compiler.h"
+#include <Kismet2/KismetReinstanceUtilities.h>
+
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprint.h"
+#include "EventFlowGraph/Blueprint/EventFlowGraphBlueprintGeneratedClass.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
+#include "EventFlowEditorGraph/EditorGraph/EventFlowSystemEditorGraph.h"
+#include "EventFlowEditorGraph/EditorGraph/EditorNodes/EventFlowSystemEditorNode.h"
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 

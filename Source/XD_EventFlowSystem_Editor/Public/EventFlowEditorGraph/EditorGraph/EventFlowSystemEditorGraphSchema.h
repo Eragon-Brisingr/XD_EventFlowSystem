@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "EdGraph/EdGraphSchema.h"
-#include "EventFlowGraphNodeBase.h"
+#include "EventFlowGraph/Nodes/EventFlowGraphNodeBase.h"
 #include "EventFlowSystemEditorGraphSchema.generated.h"
 
 /**
