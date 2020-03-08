@@ -59,11 +59,11 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 				UEventFlowGraphNodeBase* BpNode = Cast<UEventFlowGraphNodeBase>(OutObjects[0].Get());
 				UClass* PropertyClass = BpNode->GetClass();
 
-				for (TFieldIterator<UProperty> PropertyIt(PropertyClass, EFieldIteratorFlags::IncludeSuper); PropertyIt; ++PropertyIt)
+				for (TFieldIterator<FProperty> PropertyIt(PropertyClass, EFieldIteratorFlags::IncludeSuper); PropertyIt; ++PropertyIt)
 				{
-					UProperty* Property = *PropertyIt;
+					FProperty* Property = *PropertyIt;
 						
-					if (UMulticastDelegateProperty* MulticastDelegateProperty = Cast<UMulticastDelegateProperty>(Property))
+					if (FMulticastDelegateProperty* MulticastDelegateProperty = CastField<FMulticastDelegateProperty>(Property))
 					{
 						CreateMulticastEventCustomization(DetailLayout, *BpNode->GetVarRefName(), PropertyClass, MulticastDelegateProperty);
 					}
@@ -71,7 +71,7 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 			}
 		}
 
-		void CreateMulticastEventCustomization(IDetailLayoutBuilder& DetailLayout, FName ThisComponentName, UClass* PropertyClass, UMulticastDelegateProperty* DelegateProperty)
+		void CreateMulticastEventCustomization(IDetailLayoutBuilder& DetailLayout, FName ThisComponentName, UClass* PropertyClass, FMulticastDelegateProperty* DelegateProperty)
 		{
 			const FString AddString = FString(TEXT("添加 "));
 			const FString ViewString = FString(TEXT("查看 "));
@@ -89,7 +89,7 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 				PropertyTooltip = FText::FromString(DelegateProperty->GetName());
 			}
 
-			UObjectProperty* ComponentProperty = FindField<UObjectProperty>(Blueprint->SkeletonGeneratedClass, ThisComponentName);
+			FObjectProperty* ComponentProperty = FindField<FObjectProperty>(Blueprint->SkeletonGeneratedClass, ThisComponentName);
 
 			if (!ComponentProperty)
 			{
@@ -156,7 +156,7 @@ void SEventFlowDetailsView::Construct(const FArguments& InArgs, TWeakPtr<FEventF
 			UBlueprint* BlueprintObj = Blueprint;
 
 			// Find the corresponding variable property in the Blueprint
-			UObjectProperty* VariableProperty = FindField<UObjectProperty>(BlueprintObj->SkeletonGeneratedClass, PropertyName);
+			FObjectProperty* VariableProperty = FindField<FObjectProperty>(BlueprintObj->SkeletonGeneratedClass, PropertyName);
 
 			if (VariableProperty)
 			{

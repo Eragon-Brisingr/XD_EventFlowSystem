@@ -166,8 +166,12 @@ FEventFlowDesignerApplicationMode::FEventFlowDesignerApplicationMode(TSharedPtr<
  	TabFactories.RegisterFactory(MakeShareable(new FEventFlowDesignerGraphSummoner(this, GraphEditorToolkit)));
 
 	ToolbarExtender = MakeShareable(new FExtender);
-	GraphEditorToolkit->GetToolbarBuilder()->AddCompileToolbar(ToolbarExtender);
-	GraphEditorToolkit->GetToolbarBuilder()->AddDebuggingToolbar(ToolbarExtender);
+
+	if (UToolMenu* Toolbar = GraphEditorToolkit->RegisterModeToolbarIfUnregistered(GetModeName()))
+	{
+		GraphEditorToolkit->GetToolbarBuilder()->AddCompileToolbar(Toolbar);
+		GraphEditorToolkit->GetToolbarBuilder()->AddDebuggingToolbar(Toolbar);
+	}
 	AddModeSwitchToolBarExtension();
 
 	BindDesignerToolkitCommands();

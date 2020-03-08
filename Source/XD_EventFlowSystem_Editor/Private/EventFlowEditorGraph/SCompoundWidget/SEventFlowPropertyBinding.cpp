@@ -14,7 +14,7 @@
 
 #define LOCTEXT_NAMESPACE "XD_EventFlowGraph"
 
-void SEventFlowPropertyBinding::Construct(const FArguments& InArgs, FEventFlowSystemEditor* InEditor, UDelegateProperty* DelegateProperty, TSharedRef<IPropertyHandle> Property)
+void SEventFlowPropertyBinding::Construct(const FArguments& InArgs, FEventFlowSystemEditor* InEditor, FDelegateProperty* DelegateProperty, TSharedRef<IPropertyHandle> Property)
 {
 	Editor = InEditor;
 	BindableSignature = DelegateProperty->SignatureFunction;
@@ -458,12 +458,12 @@ bool FEventFlowDetailExtensionHandler::IsPropertyExtendable(const UClass* InObje
 			return false;
 		}
 
-		UProperty* Property = InPropertyHandle.GetProperty();
+		FProperty* Property = InPropertyHandle.GetProperty();
 		FString DelegateName = Property->GetName() + "Delegate";
 
-		if (UClass* ContainerClass = Cast<UClass>(Property->GetOuter()))
+		if (UClass* ContainerClass = Property->GetOwnerClass())
 		{
-			UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(ContainerClass, FName(*DelegateName));
+			FDelegateProperty* DelegateProperty = FindField<FDelegateProperty>(ContainerClass, FName(*DelegateName));
 			if (DelegateProperty)
 			{
 				return true;
@@ -476,10 +476,10 @@ bool FEventFlowDetailExtensionHandler::IsPropertyExtendable(const UClass* InObje
 
 TSharedRef<SWidget> FEventFlowDetailExtensionHandler::GenerateExtensionWidget(const IDetailLayoutBuilder& InDetailBuilder, const UClass* InObjectClass, TSharedPtr<IPropertyHandle> PropertyHandle)
 {
-	UProperty* Property = PropertyHandle->GetProperty();
+	FProperty* Property = PropertyHandle->GetProperty();
 	FString DelegateName = Property->GetName() + "Delegate";
 
-	UDelegateProperty* DelegateProperty = FindFieldChecked<UDelegateProperty>(CastChecked<UClass>(Property->GetOuter()), FName(*DelegateName));
+	FDelegateProperty* DelegateProperty = FindFieldChecked<FDelegateProperty>(Property->GetOwnerClass(), FName(*DelegateName));
 
 	const bool bIsEditable = Property->HasAnyPropertyFlags(CPF_Edit | CPF_EditConst);
 	const bool bDoSignaturesMatch = DelegateProperty->SignatureFunction->GetReturnProperty()->SameType(Property);

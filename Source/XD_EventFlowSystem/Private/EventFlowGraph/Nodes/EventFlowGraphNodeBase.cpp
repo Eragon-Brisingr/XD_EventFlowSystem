@@ -41,12 +41,12 @@ void UEventFlowGraphNodeBase::BindRefAndDelegate(UXD_EventFlowBase* EventFlow)
 	if (UEventFlowGraphBlueprintGeneratedClass* GeneratedClass = Cast<UEventFlowGraphBlueprintGeneratedClass>(EventFlow->GetClass()))
 	{
 		FString VarRefName = GetVarRefName();
-		UProperty* RefProperty = EventFlow->GetClass()->FindPropertyByName(*VarRefName);
+		FProperty* RefProperty = EventFlow->GetClass()->FindPropertyByName(*VarRefName);
 		*RefProperty->ContainerPtrToValuePtr<UObject*>(EventFlow) = this;
 
 		for (const FEventFlowDelegateRuntimeBinding& Binding : GeneratedClass->Bindings)
 		{
-			UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
+			FDelegateProperty* DelegateProperty = FindField<FDelegateProperty>(GetClass(), *(Binding.PropertyName.ToString() + TEXT("Delegate")));
 			if (Binding.ObjectName == GetVarRefName())
 			{
 				FScriptDelegate* ScriptDelegate = DelegateProperty->GetPropertyValuePtr_InContainer(this);

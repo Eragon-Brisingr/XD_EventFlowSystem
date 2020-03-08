@@ -71,7 +71,7 @@ void FEventFlowSystemBP_Compiler::CreateClassVariablesFromBlueprint()
 				UBlueprint::ForceLoadMembers(Node);
 				if (Node->bIsVariable)
 				{
-					UProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
+					FProperty* NodeProperty = CreateVariable(*Node->GetVarRefName(), FEdGraphPinType(UEdGraphSchema_K2::PC_Object, NAME_None, Node->GetClass(), EPinContainerType::None, false, FEdGraphTerminalType()));
 					if (NodeProperty)
 					{
 						NodeProperty->SetPropertyFlags(CPF_BlueprintVisible);
@@ -139,7 +139,7 @@ bool FEventFlowSystemBP_Compiler::IsBindingValid(const FEventFlowDelegateEditorB
 
 	if (UFunction* Function = Class->FindFunctionByName(Binding.GetFunctionName(Blueprint), EIncludeSuperFlag::IncludeSuper))
 	{
-		UDelegateProperty* DelegateProperty = FindField<UDelegateProperty>(Binding.Object->GetClass(), FName(*(Binding.PropertyName.ToString() + TEXT("Delegate"))));
+		FDelegateProperty* DelegateProperty = FindField<FDelegateProperty>(Binding.Object->GetClass(), FName(*(Binding.PropertyName.ToString() + TEXT("Delegate"))));
 
 		// Check the signatures to ensure these functions match.
 		if (Function->IsSignatureCompatibleWith(DelegateProperty->SignatureFunction, UFunction::GetDefaultIgnoredSignatureCompatibilityFlags() | CPF_ReturnParm))

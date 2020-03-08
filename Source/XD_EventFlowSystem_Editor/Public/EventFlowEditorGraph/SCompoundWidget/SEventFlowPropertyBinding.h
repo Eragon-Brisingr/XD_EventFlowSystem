@@ -22,7 +22,7 @@ public:
 	SLATE_END_ARGS()
 
 public:
-	void Construct(const FArguments& InArgs, FEventFlowSystemEditor* InEditor, UDelegateProperty* DelegateProperty, TSharedRef<IPropertyHandle> Property);
+	void Construct(const FArguments& InArgs, FEventFlowSystemEditor* InEditor, FDelegateProperty* DelegateProperty, TSharedRef<IPropertyHandle> Property);
 
 	TSharedRef<SWidget> OnGenerateDelegateMenu(UObject* Object, TSharedRef<IPropertyHandle> PropertyHandle);
 
