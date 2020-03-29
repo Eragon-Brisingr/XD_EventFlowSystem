@@ -285,7 +285,7 @@ void FEventFlowSystem_Editor_ClassHelper::OnAssetRemoved(const struct FAssetData
 	if (AssetData.GetTagValue(FBlueprintTags::GeneratedClassPath, AssetClassName))
 	{
 		ConstructorHelpers::StripObjectClass(AssetClassName);
-		AssetClassName = FPackageName::ObjectPathToObjectName(*AssetClassName);
+		AssetClassName = FPackageName::ObjectPathToObjectName(AssetClassName);
 
 		TSharedPtr<FEventFlowEditor_ClassNode> Node = FindBaseClassNode(RootNode, AssetClassName);
 		if (Node.IsValid() && Node->ParentNode.IsValid())

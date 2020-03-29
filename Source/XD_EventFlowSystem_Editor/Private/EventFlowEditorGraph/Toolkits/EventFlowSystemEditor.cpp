@@ -57,7 +57,7 @@ FString FEventFlowSystemEditor::GetWorldCentricTabPrefix() const
 
 void FEventFlowSystemEditor::InitEventFlowSystemGarphEditor(const EToolkitMode::Type InMode, const TSharedPtr<class IToolkitHost>& InToolkitHost, UEventFlowGraphBlueprint* EventFlowGraphBlueprint)
 {
-	InitBlueprintEditor(InMode, InToolkitHost, { EventFlowGraphBlueprint }, true);
+	InitBlueprintEditor(InMode, InToolkitHost, { EventFlowGraphBlueprint }, false);
 	UpdatePreviewActor(GetBlueprintObj(), true);
 
 	if (EventFlowGraphBlueprint->EdGraph == nullptr)
